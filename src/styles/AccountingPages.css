@@ -1,0 +1,91 @@
+.accounting-page { }
+
+.accounts-tree {}
+
+.account-type-section { margin-bottom: 1.5rem; }
+
+.account-type-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  margin-bottom: 0.5rem;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.account-type-header h3 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.account-row--child td:first-child { padding-left: 2.5rem; }
+
+/* ── Journal entry form ────────────────────────────────────── */
+.je-lines-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+.je-lines-table th { font-size: 0.75rem; color: var(--color-text-secondary); text-transform: uppercase; padding: 0.4rem 0.5rem; text-align: left; }
+.je-lines-table td { padding: 0.35rem 0.5rem; }
+.je-lines-table td input, .je-lines-table td select { padding: 0.35rem 0.5rem; font-size: 0.825rem; }
+.je-totals { display: flex; justify-content: flex-end; gap: 2rem; margin-top: 0.75rem; font-size: 0.875rem; }
+.je-totals span { color: var(--color-text-secondary); }
+.je-totals strong { color: var(--color-text-primary); }
+.je-balanced { color: var(--color-accent-green); font-size: 0.8rem; }
+.je-unbalanced { color: var(--color-accent-red); font-size: 0.8rem; }
+
+/* ── Reports shared ────────────────────────────────────────── */
+.report-controls {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.report-controls .form-field { min-width: 150px; }
+
+.report-card {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.report-card-header {
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.report-card-header h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.report-table { width: 100%; border-collapse: collapse; }
+.report-table th {
+  font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+  color: var(--color-text-secondary); padding: 0.6rem 1.25rem;
+  text-align: left; background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+}
+.report-table th:last-child { text-align: right; }
+.report-table td { padding: 0.55rem 1.25rem; font-size: 0.875rem; border-bottom: 1px solid var(--color-border); }
+.report-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.report-table tr:last-child td { border-bottom: none; }
+
+.report-total-row td { font-weight: 700; background-color: var(--color-bg-tertiary); }
+.report-net-row td {
+  font-weight: 700; font-size: 1rem;
+  background: rgba(46, 204, 113, 0.08);
+  color: var(--color-accent-green);
+  border-top: 2px solid var(--color-accent-green);
+}
+.report-net-row.negative td { background: rgba(231, 76, 60, 0.08); color: var(--color-accent-red); border-top-color: var(--color-accent-red); }
+
+.ledger-balance-col { font-variant-numeric: tabular-nums; }

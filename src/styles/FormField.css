@@ -1,0 +1,43 @@
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.form-field-label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-field-required {
+  color: var(--color-accent-red);
+  margin-left: 2px;
+}
+
+.form-field--error input,
+.form-field--error select,
+.form-field--error textarea {
+  border-color: var(--color-accent-red);
+}
+
+.form-field--error input:focus,
+.form-field--error select:focus,
+.form-field--error textarea:focus {
+  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
+}
+
+.form-field-error {
+  font-size: 0.78rem;
+  color: var(--color-accent-red);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.form-field-hint {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+}

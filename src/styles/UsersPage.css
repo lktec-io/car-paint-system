@@ -1,0 +1,59 @@
+.users-page {}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.page-header h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 500px) {
+  .form-row { grid-template-columns: 1fr; }
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.role-super_admin   { background: rgba(52,152,219,0.15); color: var(--color-accent-blue); }
+.role-accountant    { background: rgba(46,204,113,0.15); color: var(--color-accent-green); }
+.role-store_manager { background: rgba(243,156,18,0.15); color: var(--color-accent-orange); }
+.role-sales_officer { background: rgba(155,89,182,0.15); color: #9b59b6; }
+.role-technician    { background: rgba(52,152,219,0.12); color: #5dade2; }
+.role-viewer        { background: rgba(136,153,170,0.15); color: var(--color-text-secondary); }
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge--active   { color: var(--color-accent-green); }
+.status-badge--inactive { color: var(--color-accent-red); }

@@ -1,0 +1,35 @@
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  margin-left: var(--sidebar-width);
+  transition: margin-left 0.22s ease;
+  background-color: var(--color-bg-primary);
+}
+
+.app-layout--collapsed .app-content {
+  margin-left: var(--sidebar-collapsed-w);
+}
+
+.app-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+@media (max-width: 767px) {
+  .app-content {
+    margin-left: 0 !important;
+    padding-bottom: 68px; /* space for bottom nav */
+  }
+
+  .app-main {
+    padding: 1rem;
+  }
+}

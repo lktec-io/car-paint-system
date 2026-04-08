@@ -1,0 +1,114 @@
+.audit-filters {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.audit-filters label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.84rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.audit-filters input[type="date"],
+.audit-filters select {
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font-size: 0.84rem;
+}
+
+.audit-table-wrap {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.audit-table th {
+  background: var(--color-bg-tertiary);
+  padding: 0.55rem 0.85rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.audit-table td {
+  padding: 0.5rem 0.85rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.audit-table tr:last-child td { border-bottom: none; }
+.audit-table tr:hover td { background: var(--color-bg-tertiary); }
+
+.audit-ts { white-space: nowrap; color: var(--color-text-secondary); font-size: 0.78rem; }
+.audit-user { font-weight: 500; }
+.audit-user-email { font-size: 0.75rem; color: var(--color-text-secondary); }
+.audit-entity { text-transform: capitalize; font-size: 0.8rem; }
+.audit-ip { font-size: 0.78rem; color: var(--color-text-secondary); font-family: monospace; }
+
+.audit-empty {
+  text-align: center;
+  padding: 2.5rem;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.audit-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.audit-pagination-info { font-size: 0.82rem; color: var(--color-text-secondary); }
+
+.audit-pagination-btns { display: flex; gap: 0.4rem; }
+
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--color-accent-blue);
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.btn-text:hover { color: var(--color-text-primary); }
+
+.audit-json {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  font-size: 0.78rem;
+  font-family: monospace;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  color: var(--color-text-primary);
+  max-height: 220px;
+  overflow-y: auto;
+}

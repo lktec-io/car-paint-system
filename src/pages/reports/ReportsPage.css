@@ -1,0 +1,129 @@
+.reports-tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 2px solid var(--color-border);
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.reports-tab {
+  background: none;
+  border: none;
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: var(--transition);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.reports-tab:hover { color: var(--color-text-primary); background: var(--color-bg-tertiary); }
+.reports-tab.active { color: var(--color-accent-green); border-bottom-color: var(--color-accent-green); font-weight: 600; }
+
+.reports-filters {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.reports-filters label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.reports-filters input[type="date"] {
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font-size: 0.85rem;
+}
+
+.reports-output {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  min-height: 200px;
+}
+
+/* Generic table */
+.report-table-wrap { overflow-x: auto; }
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.83rem;
+}
+
+.report-table th {
+  background: var(--color-bg-tertiary);
+  padding: 0.6rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.report-table td {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.report-table tr:last-child td { border-bottom: none; }
+.report-table tr:hover td { background: var(--color-bg-tertiary); }
+
+/* Financial report */
+.report-financial { padding: 1.25rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+.report-section { display: flex; flex-direction: column; gap: 0.1rem; }
+
+.report-section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+  padding: 0.5rem 0.75rem;
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius);
+  margin-bottom: 0.25rem;
+}
+
+.report-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.report-total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.87rem;
+  font-weight: 700;
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius);
+  margin-top: 0.25rem;
+}
+
+.report-total-row.net {
+  font-size: 1rem;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+}

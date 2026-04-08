@@ -1,0 +1,204 @@
+.datatable-wrapper {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* ── Toolbar ───────────────────────────────────────────────── */
+.datatable-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.datatable-search {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.35rem 0.65rem;
+  flex: 1;
+  min-width: 180px;
+  max-width: 320px;
+}
+
+.datatable-search svg {
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.datatable-search input {
+  background: none;
+  border: none;
+  outline: none;
+  padding: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  width: 100%;
+}
+
+.datatable-search input::placeholder { color: var(--color-text-secondary); }
+
+.datatable-toolbar-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+/* ── Table ─────────────────────────────────────────────────── */
+.datatable-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.datatable-table {
+  width: 100%;
+  min-width: 500px;
+  border-collapse: collapse;
+}
+
+.datatable-table th {
+  background-color: var(--color-bg-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  padding: 0.7rem 1rem;
+  text-align: left;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 2px solid var(--color-border);
+  white-space: nowrap;
+  cursor: default;
+  user-select: none;
+}
+
+.datatable-table th.sortable {
+  cursor: pointer;
+}
+
+.datatable-table th.sortable:hover {
+  color: var(--color-text-primary);
+}
+
+.th-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.sort-icon {
+  font-size: 0.9rem;
+  opacity: 0.5;
+}
+
+.sort-icon--active {
+  opacity: 1;
+  color: var(--color-accent-blue);
+}
+
+.datatable-table td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.datatable-table tbody tr:nth-child(even) td {
+  background-color: rgba(30, 58, 80, 0.2);
+}
+
+.datatable-table tbody tr:hover td {
+  background-color: var(--color-bg-tertiary);
+  cursor: pointer;
+}
+
+.datatable-table tbody tr.no-row-click:hover td {
+  cursor: default;
+}
+
+/* ── Row actions ───────────────────────────────────────────── */
+.row-actions {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+/* ── Empty + loading states ────────────────────────────────── */
+.datatable-empty {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.datatable-empty svg {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.4;
+}
+
+/* ── Pagination ────────────────────────────────────────────── */
+.datatable-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--color-border);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pagination-info {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.page-btn {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 0.4rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.page-btn:hover:not(:disabled) {
+  background-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-btn--active {
+  background-color: var(--color-accent-blue);
+  border-color: var(--color-accent-blue);
+  color: #fff;
+}

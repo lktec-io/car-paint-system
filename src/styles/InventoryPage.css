@@ -1,0 +1,30 @@
+.inventory-page {}
+
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  border-radius: 0;
+}
+
+.tab-btn:hover { color: var(--color-text-primary); }
+
+.tab-btn--active {
+  color: var(--color-accent-blue);
+  border-bottom-color: var(--color-accent-blue);
+}

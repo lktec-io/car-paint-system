@@ -1,0 +1,60 @@
+/* ============================================================
+   Design System — CSS Custom Properties
+   Import this file ONCE in main.jsx (not per component).
+   All other CSS files reference these variables directly.
+   ============================================================ */
+
+:root {
+  /* Backgrounds */
+  --color-bg-primary:    #0F1923;
+  --color-bg-secondary:  #162A3A;
+  --color-bg-tertiary:   #1E3A50;
+
+  /* Accent colors */
+  --color-accent-green:  #2ECC71;
+  --color-accent-orange: #F39C12;
+  --color-accent-red:    #E74C3C;
+  --color-accent-blue:   #3498DB;
+
+  /* Text */
+  --color-text-primary:   #ECEFF1;
+  --color-text-secondary: #8899AA;
+
+  /* UI chrome */
+  --color-border:  #2A3F52;
+
+  /* Typography */
+  --font-heading: 'Poppins', sans-serif;
+  --font-body:    'Inter', sans-serif;
+
+  /* Shared tokens */
+  --radius:           5px;
+  --shadow-card:      0 2px 8px rgba(0, 0, 0, 0.3);
+  --transition:       all 0.2s ease;
+
+  /* Sidebar */
+  --sidebar-width:         240px;
+  --sidebar-collapsed-w:   64px;
+
+  /* Topbar */
+  --topbar-height: 60px;
+
+  /* Z-index layers */
+  --z-sidebar:   100;
+  --z-topbar:    200;
+  --z-modal:     300;
+  --z-toast:     400;
+}
+
+/* ── Light mode overrides ──────────────────────────────────────
+   Toggled by adding data-theme="light" to <body>.
+   ────────────────────────────────────────────────────────────── */
+body[data-theme='light'] {
+  --color-bg-primary:    #F4F7FA;
+  --color-bg-secondary:  #FFFFFF;
+  --color-bg-tertiary:   #E8EEF4;
+  --color-text-primary:  #1A2B3C;
+  --color-text-secondary:#5A7080;
+  --color-border:        #D0DCE8;
+  --shadow-card:         0 2px 8px rgba(0, 0, 0, 0.1);
+}
