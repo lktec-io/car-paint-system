@@ -9,11 +9,11 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 async function runMigrations() {
   const connection = await mysql.createConnection({
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT) || 8001,
+    host: process.env.DB_HOST || '127.0.0.1',
+    port: parseInt(process.env.DB_PORT) || 8002,
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'car_paint_accounting',
+    database: process.env.DB_NAME || 'carpaint',
     multipleStatements: true,
   });
 

@@ -14,7 +14,7 @@ const bcrypt = require('bcryptjs');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
-const DEFAULT_ORG_NAME = 'AutoShine Car Paint Shop';
+const DEFAULT_ORG_NAME = 'Silas Car Paint Shop';
 const ADMIN_EMAIL = 'admin@carpaint.com';
 const ADMIN_PASSWORD = 'Admin@1234';
 
@@ -85,11 +85,11 @@ const INVENTORY_CATEGORIES = [
 
 async function seed() {
   const connection = await mysql.createConnection({
-    host: process.env.DB_HOST || 'localhost',
+    host: process.env.DB_HOST || '127.0.0.1',
     port: parseInt(process.env.DB_PORT) || 8002,
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'car_paint_accounting',
+    database: process.env.DB_NAME || 'carpaint',
   });
 
   try {
@@ -106,7 +106,7 @@ async function seed() {
     } else {
       const [result] = await connection.query(
         `INSERT INTO organizations (name, address, phone, email) VALUES (?, ?, ?, ?)`,
-        [DEFAULT_ORG_NAME, '123 Auto Street, Paint City', '+1-555-0100', 'info@carpaint.com']
+        [DEFAULT_ORG_NAME, '123 Auto Street, Paint City', '+255-674-0100', 'info@silaspaint.com']
       );
       orgId = result.insertId;
       console.log(`✅ Organization created (id=${orgId})`);
