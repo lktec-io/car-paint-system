@@ -27,7 +27,7 @@ const app = express();
 
 // ── Security & parsing middleware ─────────────────────────────────────────────
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'https://silas-paint-store.nardio.online/',
+  origin: process.env.CLIENT_URL || 'https://silas-paint-store.nardio.online',
   credentials: true,                 // required for httpOnly cookies
   methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -71,8 +71,12 @@ app.use(errorHandler);
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 const PORT = parseInt(process.env.PORT) || 8002;
+app.get('/', (req, res) => {
+  res.send('Car Paint API Running 🚀');
+});
+
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on https://silas-paint-store.nardio.online/:${PORT}`);
+  console.log(`🚀 Server running on https://silas-paint-store.nardio.online:${PORT}`);
   console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
