@@ -138,7 +138,7 @@ export default function InventoryPage() {
   ];
 
   return (
-    <div className="inventory-page">
+    <div className="inventory-page page-enter">
       <div className="page-header">
         <h2>Inventory Management</h2>
         {canManage && <button className="btn btn-primary" onClick={openCreate}><MdAdd /> Add Item</button>}
@@ -173,7 +173,7 @@ export default function InventoryPage() {
             <FormField label="SKU" error={touched.sku && errors.sku} required htmlFor="inv-sku"><input id="inv-sku" value={form.sku} onChange={(e) => setField('sku', e.target.value)} placeholder="PAINT-001" disabled={Boolean(editItem)} /></FormField>
           </div>
           <div className="form-row">
-            <FormField label="Unit Cost ($)" error={touched.unit_cost && errors.unit_cost} required htmlFor="inv-cost"><input id="inv-cost" type="number" min="0" step="0.01" value={form.unit_cost} onChange={(e) => setField('unit_cost', e.target.value)} placeholder="0.00" /></FormField>
+            <FormField label="Unit Cost (TZS)" error={touched.unit_cost && errors.unit_cost} required htmlFor="inv-cost"><input id="inv-cost" type="number" min="0" step="0.01" value={form.unit_cost} onChange={(e) => setField('unit_cost', e.target.value)} placeholder="0.00" /></FormField>
             <FormField label="Unit" htmlFor="inv-unit"><input id="inv-unit" value={form.unit} onChange={(e) => setField('unit', e.target.value)} placeholder="pcs, litre, kg" /></FormField>
           </div>
           <div className="form-row">

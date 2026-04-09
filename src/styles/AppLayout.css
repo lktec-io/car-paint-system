@@ -1,6 +1,7 @@
 .app-layout {
   display: flex;
   min-height: 100vh;
+  width: 100%;
 }
 
 .app-content {
@@ -9,7 +10,7 @@
   flex: 1;
   min-width: 0;
   margin-left: var(--sidebar-width);
-  transition: margin-left 0.22s ease;
+  transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   background-color: var(--color-bg-primary);
 }
 
@@ -26,7 +27,7 @@
 @media (max-width: 767px) {
   .app-content {
     margin-left: 0 !important;
-    padding-bottom: 68px; /* space for bottom nav */
+    padding-bottom: 68px;
   }
 
   .app-main {

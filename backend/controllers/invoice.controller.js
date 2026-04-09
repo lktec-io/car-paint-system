@@ -3,6 +3,25 @@ const { deductStock } = require('../services/inventory.service');
 const { createJournalEntry } = require('../services/accounting.service');
 const { generateReference } = require('../utils/autoReference');
 
+async function nextNumber(req, res, next) {
+  try {
+    const [rows] = await pool.query(
+      'SELECT invoice_number FROM invoices WHERE organization_id = ? ORDER BY id DESC LIMIT 1',
+      [req.orgId]
+    );
+    let next = 'INV-0001';
+    if (rows.length) {
+      const last = rows[0].invoice_number; // e.g. "INV-0042"
+      const match = last.match(/(\D+-)(\d+)$/);
+      if (match) {
+        const num = parseInt(match[2], 10) + 1;
+        next = match[1] + String(num).padStart(4, '0');
+      }
+    }
+    res.json({ success: true, data: { next_number: next } });
+  } catch (err) { next(err); }
+}
+
 async function list(req, res, next) {
   try {
     const [rows] = await pool.query(
@@ -174,4 +193,4 @@ async function recordPayment(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { list, get, create, update, recordPayment };
+module.exports = { nextNumber, list, get, create, update, recordPayment };

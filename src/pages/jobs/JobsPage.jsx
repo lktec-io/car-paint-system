@@ -130,7 +130,7 @@ export default function JobsPage() {
   }
 
   return (
-    <div>
+    <div className="page-enter">
       <div className="page-header">
         <h2>Jobs</h2>
         {canManage && <button className="btn btn-primary" onClick={openCreate}><MdAdd /> New Job</button>}

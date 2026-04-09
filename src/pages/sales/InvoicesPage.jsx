@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { MdAdd, MdVisibility, MdPayment } from 'react-icons/md';
+import { MdAdd, MdVisibility, MdPayment, MdRefresh } from 'react-icons/md';
 import api from '../../api/axios';
 import useUiStore from '../../stores/uiStore';
 import DataTable from '../../components/common/DataTable';
@@ -41,6 +41,8 @@ export default function InvoicesPage() {
   const [saving, setSaving]       = useState(false);
   const [payAmt, setPayAmt]       = useState('');
   const [form, setForm]           = useState(blankForm());
+  const [nextNum, setNextNum]     = useState('');
+  const [numLoading, setNumLoading] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -56,7 +58,16 @@ export default function InvoicesPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  function openCreate() { setForm(blankForm()); setCreateOpen(true); }
+  async function fetchNextNumber() {
+    setNumLoading(true);
+    try {
+      const { data } = await api.get('/invoices/next-number');
+      setNextNum(data.data.next_number);
+    } catch { setNextNum('INV-????'); }
+    finally { setNumLoading(false); }
+  }
+
+  function openCreate() { setForm(blankForm()); fetchNextNumber(); setCreateOpen(true); }
 
   function setField(k, v) { setForm(f => ({ ...f, [k]: v })); }
 
@@ -104,7 +115,7 @@ export default function InvoicesPage() {
   }
 
   return (
-    <div>
+    <div className="page-enter">
       <div className="page-header">
         <h2>Invoices</h2>
         <button className="btn btn-primary" onClick={openCreate}><MdAdd /> New Invoice</button>
@@ -125,6 +136,15 @@ export default function InvoicesPage() {
         </>}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {/* Auto-generated invoice number */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FormField label="Invoice Number" htmlFor="inv-num" style={{ flex: 1 }}>
+              <input id="inv-num" value={numLoading ? 'Generating…' : nextNum} readOnly style={{ background: 'var(--color-bg-primary)', cursor: 'default', fontWeight: 600, letterSpacing: '0.04em' }} />
+            </FormField>
+            <button type="button" className="btn btn-secondary" style={{ marginTop: '1.4rem', padding: '0.5rem 0.65rem' }} onClick={fetchNextNumber} disabled={numLoading} title="Re-generate">
+              <MdRefresh className={numLoading ? 'spin' : ''} />
+            </button>
+          </div>
           <div className="form-row">
             <FormField label="Customer" htmlFor="inv-cust">
               <select id="inv-cust" value={form.customer_id} onChange={e => setField('customer_id', e.target.value)}>

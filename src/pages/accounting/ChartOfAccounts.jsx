@@ -82,7 +82,7 @@ export default function ChartOfAccounts() {
   const parentOptions = accounts.filter((a) => a.account_type === form.account_type && !a.parent_id);
 
   return (
-    <div className="accounting-page">
+    <div className="accounting-page page-enter">
       <div className="page-header">
         <h2>Chart of Accounts</h2>
         <button className="btn btn-primary" onClick={openCreate}><MdAdd /> Add Account</button>

@@ -8,6 +8,7 @@
 .spinner-wrapper--sm { padding: 0.5rem; }
 .spinner-wrapper--lg { padding: 3rem; }
 
+/* Classic ring spinner */
 .spinner {
   border-radius: 50%;
   border-style: solid;
@@ -21,3 +22,18 @@
 .spinner-wrapper--lg .spinner { width: 52px; height: 52px; border-width: 4px; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Skeleton list */
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+/* Skeleton cards grid */
+.skeleton-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}

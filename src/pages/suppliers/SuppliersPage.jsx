@@ -74,7 +74,7 @@ export default function SuppliersPage() {
   }
 
   return (
-    <div>
+    <div className="page-enter">
       <div className="page-header">
         <h2>Suppliers</h2>
         <button className="btn btn-primary" onClick={openCreate}><MdAdd /> Add Supplier</button>

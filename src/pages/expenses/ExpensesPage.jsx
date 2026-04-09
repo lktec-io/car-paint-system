@@ -89,7 +89,7 @@ export default function ExpensesPage() {
     .reduce((s, r) => s + parseFloat(r.amount || 0), 0);
 
   return (
-    <div>
+    <div className="page-enter">
       <div className="page-header">
         <h2>Expenses <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', fontWeight: 400, marginLeft: '0.5rem' }}>This month: {formatCurrency(totalMonth)}</span></h2>
         <div style={{ display: 'flex', gap: '0.5rem' }}>

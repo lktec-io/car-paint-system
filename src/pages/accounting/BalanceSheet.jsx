@@ -10,7 +10,7 @@ const today = new Date().toISOString().split('T')[0];
 
 function Section({ title, rows, total, colorClass }) {
   return (
-    <div className="report-card" style={{ marginBottom: '1rem' }}>
+    <div className="report-card page-enter" style={{ marginBottom: "1rem" }}>
       <div className="report-card-header"><h3>{title}</h3><strong className={colorClass}>{formatCurrency(total)}</strong></div>
       <table className="report-table">
         <thead><tr><th>Code</th><th>Account</th><th>Balance</th></tr></thead>
@@ -47,7 +47,7 @@ export default function BalanceSheet() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <div className="accounting-page">
+    <div className="accounting-page page-enter">
       <div className="page-header"><h2>Balance Sheet</h2></div>
       <div className="report-controls">
         <FormField label="As of Date" htmlFor="bs-asof"><input id="bs-asof" type="date" value={asOf} onChange={(e) => setAsOf(e.target.value)} /></FormField>

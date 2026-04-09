@@ -9,6 +9,7 @@ const ctrl = require('../controllers/invoice.controller');
 const router = express.Router();
 router.use(authenticate, tenantIsolation);
 const ROLES = ['super_admin','accountant','store_manager','sales_officer'];
+router.get('/next-number', authorize(ROLES), ctrl.nextNumber);
 router.get('/', authorize(ROLES), ctrl.list);
 router.get('/:id', authorize(ROLES), param('id').isInt(), validate, ctrl.get);
 router.post('/', authorize(ROLES), auditLog('CREATE','invoices'),

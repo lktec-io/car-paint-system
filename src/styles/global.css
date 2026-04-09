@@ -21,6 +21,7 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -205,22 +206,27 @@ tbody tr:hover {
 .badge-info    { background-color: rgba(52,152,219,0.15); color: var(--color-accent-blue); }
 .badge-neutral { background-color: rgba(136,153,170,0.15); color: var(--color-text-secondary); }
 
-/* Loading pulse animation */
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.4; }
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
 }
 
 .skeleton {
-  background-color: var(--color-bg-tertiary);
-  border-radius: var(--radius);
-  animation: pulse 1.5s ease infinite;
+  background: linear-gradient(90deg,
+    var(--color-bg-tertiary) 25%,
+    var(--color-bg-secondary) 50%,
+    var(--color-bg-tertiary) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-sm);
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--color-bg-primary); }
-::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-sm); }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-text-secondary); }
 
 /* ── App shell ─────────────────────────────────────────────── */
@@ -261,4 +267,31 @@ tbody tr:hover {
 
 @media (max-width: 600px) {
   .form-row { grid-template-columns: 1fr; }
+}
+
+/* ── Responsive: modals, forms, topbar ──────────────────────── */
+@media (max-width: 768px) {
+  .modal {
+    width: 95% !important;
+    max-height: 92vh;
+    overflow-y: auto;
+    margin: 4vh auto;
+  }
+  .modal--lg, .modal--xl { max-width: 95% !important; }
+
+  .form-row { grid-template-columns: 1fr !important; }
+
+  input, select, textarea {
+    font-size: 16px; /* prevents iOS zoom */
+  }
+
+  .topbar { padding: 0 0.75rem; }
+  .topbar-title { font-size: 0.95rem; }
+  .topbar-actions { gap: 4px; }
+  .user-name { display: none; }
+}
+
+@media (max-width: 1200px) {
+  .stat-cards,
+  .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
 }

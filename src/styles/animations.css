@@ -1,0 +1,110 @@
+/* ============================================================
+   Animation Utilities
+   ============================================================ */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dotBounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40%           { transform: scale(1);   opacity: 1; }
+}
+
+/* ── Skeleton variants ──────────────────────────────────────── */
+.skeleton-text  { height: 14px; margin-bottom: 8px; width: 80%; border-radius: var(--radius-sm); }
+.skeleton-text.short { width: 40%; }
+.skeleton-title { height: 22px; margin-bottom: 12px; width: 60%; border-radius: var(--radius-sm); }
+.skeleton-card  { height: 120px; width: 100%; border-radius: var(--radius); }
+.skeleton-chart { height: 300px; width: 100%; border-radius: var(--radius); }
+.skeleton-row   { height: 48px; width: 100%; margin-bottom: 4px; border-radius: var(--radius-sm); }
+
+/* ── Page entry ─────────────────────────────────────────────── */
+.page-enter {
+  animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ── Staggered children ─────────────────────────────────────── */
+.stagger-children > * {
+  opacity: 0;
+  animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.10s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.20s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.30s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.40s; }
+
+/* ── Hover: cards lift ──────────────────────────────────────── */
+.stat-card {
+  transition: var(--transition-default) !important;
+}
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover) !important;
+}
+
+/* ── Hover: table rows ──────────────────────────────────────── */
+table tbody tr {
+  transition: var(--transition-fast);
+}
+
+/* ── Buttons lift on hover ──────────────────────────────────── */
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+/* ── Modal animation ────────────────────────────────────────── */
+.modal-backdrop {
+  animation: fadeIn 0.2s ease both !important;
+}
+.modal {
+  animation: scaleIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) both !important;
+}
+
+/* ── Spin utility ───────────────────────────────────────────── */
+.spin { animation: spin 1s linear infinite; }
+
+/* ── Dot loader ─────────────────────────────────────────────── */
+.dot-loader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dot-loader span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent-green);
+  animation: dotBounce 1.4s ease-in-out infinite both;
+}
+.dot-loader span:nth-child(1) { animation-delay: 0s; }
+.dot-loader span:nth-child(2) { animation-delay: 0.16s; }
+.dot-loader span:nth-child(3) { animation-delay: 0.32s; }

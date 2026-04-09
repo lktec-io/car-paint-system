@@ -12,30 +12,41 @@
   flex-shrink: 0;
 }
 
-.topbar-menu-btn {
+/* ── Animated hamburger ────────────────────────────────────── */
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--radius-sm);
   background: none;
   border: none;
-  color: var(--color-text-secondary);
-  font-size: 1.3rem;
-  padding: 0.3rem;
-  border-radius: var(--radius);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  transition: var(--transition);
   flex-shrink: 0;
+  transition: var(--transition-default);
 }
 
-.topbar-menu-btn:hover {
+.hamburger:hover {
   background-color: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
 }
 
-/* Hide hamburger on desktop (sidebar toggle handles it there) */
+.hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--color-text-primary);
+  border-radius: 2px;
+  transition: var(--transition-default);
+}
+
+.hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+.hamburger.active span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+/* On desktop, hide hamburger and rely on sidebar toggle button */
 @media (min-width: 768px) {
-  .topbar-menu-btn {
-    display: none;
-  }
+  .hamburger { display: none; }
 }
 
 .topbar-title {
@@ -55,6 +66,14 @@
   gap: 0.25rem;
   flex-shrink: 0;
 }
+
+/* ── Theme toggle icon animation ──────────────────────────── */
+.theme-toggle-icon {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+}
+.theme-toggle-icon.rotated { transform: rotate(180deg); }
 
 /* ── Icon button shared style ──────────────────────────────── */
 .topbar-icon-btn {

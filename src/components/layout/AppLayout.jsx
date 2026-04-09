@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import ToastContainer from '../common/ToastContainer';
+import InstallPrompt from '../common/InstallPrompt';
 import useUiStore from '../../stores/uiStore';
 import '../../styles/AppLayout.css';
 
@@ -18,6 +19,7 @@ export default function AppLayout() {
         </main>
       </div>
       <ToastContainer />
+      <InstallPrompt />
     </div>
   );
 }

@@ -67,7 +67,7 @@ export default function CustomersPage() {
   }
 
   return (
-    <div>
+    <div className="page-enter">
       <div className="page-header">
         <h2>Customers</h2>
         <button className="btn btn-primary" onClick={openCreate}><MdAdd /> Add Customer</button>

@@ -39,7 +39,7 @@ export default function GeneralLedger() {
   const selectedAcc = accounts.find((a) => String(a.id) === String(filters.account_id));
 
   return (
-    <div className="accounting-page">
+    <div className="accounting-page page-enter">
       <div className="page-header"><h2>General Ledger</h2></div>
       <div className="report-controls">
         <FormField label="Account" htmlFor="gl-acc">

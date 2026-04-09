@@ -27,7 +27,7 @@ export default function ProfitLoss() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <div className="accounting-page">
+    <div className="accounting-page page-enter">
       <div className="page-header"><h2>Profit & Loss</h2></div>
       <div className="report-controls">
         <FormField label="From" htmlFor="pl-start"><input id="pl-start" type="date" value={range.start} onChange={(e) => setRange((r) => ({ ...r, start: e.target.value }))} /></FormField>
@@ -37,7 +37,7 @@ export default function ProfitLoss() {
 
       {loading ? <LoadingSpinner /> : result && (
         <>
-          <div className="report-card" style={{ marginBottom: '1rem' }}>
+          <div className="report-card page-enter" style={{ marginBottom: "1rem" }}>
             <div className="report-card-header"><h3>Revenue</h3><strong className="text-success">{formatCurrency(result.totalRevenue)}</strong></div>
             <table className="report-table">
               <thead><tr><th>Account</th><th>Name</th><th>Amount</th></tr></thead>
@@ -54,7 +54,7 @@ export default function ProfitLoss() {
             </table>
           </div>
 
-          <div className="report-card" style={{ marginBottom: '1rem' }}>
+          <div className="report-card page-enter" style={{ marginBottom: "1rem" }}>
             <div className="report-card-header"><h3>Expenses</h3><strong className="text-danger">{formatCurrency(result.totalExpense)}</strong></div>
             <table className="report-table">
               <thead><tr><th>Account</th><th>Name</th><th>Amount</th></tr></thead>

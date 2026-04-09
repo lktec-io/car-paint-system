@@ -144,7 +144,7 @@ export default function UsersPage() {
   const isFormValid = Object.keys(validate(form, Boolean(editUser))).length === 0;
 
   return (
-    <div className="users-page">
+    <div className="users-page page-enter">
       <div className="page-header">
         <h2>User Management</h2>
         <button className="btn btn-primary" onClick={openCreate}>

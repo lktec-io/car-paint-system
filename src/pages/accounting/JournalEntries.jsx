@@ -88,7 +88,7 @@ export default function JournalEntries() {
   ];
 
   return (
-    <div className="accounting-page">
+    <div className="accounting-page page-enter">
       <div className="page-header">
         <h2>Journal Entries</h2>
         <button className="btn btn-primary" onClick={() => { setForm(blankForm()); setModalOpen(true); }}><MdAdd /> New Entry</button>

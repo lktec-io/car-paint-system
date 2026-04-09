@@ -27,10 +27,24 @@
   --font-heading: 'Poppins', sans-serif;
   --font-body:    'Inter', sans-serif;
 
-  /* Shared tokens */
-  --radius:           5px;
-  --shadow-card:      0 2px 8px rgba(0, 0, 0, 0.3);
-  --transition:       all 0.2s ease;
+  /* Border radius */
+  --radius:    12px;
+  --radius-sm:  8px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* Shadows */
+  --shadow-sm:    0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-card:  0 4px 16px rgba(0, 0, 0, 0.25);
+  --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.35);
+  --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+  /* Animations */
+  --transition-fast:    all 0.15s ease;
+  --transition-default: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow:    all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce:  all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition:         all 0.2s ease; /* legacy alias */
 
   /* Sidebar */
   --sidebar-width:         240px;
@@ -50,11 +64,12 @@
    Toggled by adding data-theme="light" to <body>.
    ────────────────────────────────────────────────────────────── */
 body[data-theme='light'] {
-  --color-bg-primary:    #F4F7FA;
+  --color-bg-primary:    #F5F7FA;
   --color-bg-secondary:  #FFFFFF;
-  --color-bg-tertiary:   #E8EEF4;
-  --color-text-primary:  #1A2B3C;
-  --color-text-secondary:#5A7080;
-  --color-border:        #D0DCE8;
-  --shadow-card:         0 2px 8px rgba(0, 0, 0, 0.1);
+  --color-bg-tertiary:   #EDF0F5;
+  --color-text-primary:  #1A202C;
+  --color-text-secondary:#64748B;
+  --color-border:        #E2E8F0;
+  --shadow-card:  0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
 }

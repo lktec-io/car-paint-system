@@ -66,7 +66,7 @@ export default function AuditLogPage() {
   const totalPages = Math.ceil((meta.total || 0) / meta.limit);
 
   return (
-    <div>
+    <div className="page-enter">
       <div className="page-header">
         <h2>Audit Logs</h2>
         <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>{meta.total} records</span>

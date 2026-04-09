@@ -80,13 +80,13 @@ export default function TopBar() {
 
   return (
     <header className="topbar">
-      {/* Mobile: open sidebar drawer */}
+      {/* Hamburger — works on all pages, animates to X when sidebar is open */}
       <button
-        className="topbar-menu-btn"
-        onClick={() => setSidebarOpen(true)}
-        aria-label="Open menu"
+        className={`hamburger${sidebarOpen ? ' active' : ''}`}
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
       >
-        <MdMenu />
+        <span /><span /><span />
       </button>
 
       <h1 className="topbar-title">{pageTitle}</h1>
@@ -99,7 +99,9 @@ export default function TopBar() {
           aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
         >
-          {theme === 'dark' ? <MdWbSunny /> : <MdNightlight />}
+          <span className={`theme-toggle-icon${theme === 'light' ? ' rotated' : ''}`}>
+            {theme === 'dark' ? <MdWbSunny /> : <MdNightlight />}
+          </span>
         </button>
 
         {/* Notification bell */}

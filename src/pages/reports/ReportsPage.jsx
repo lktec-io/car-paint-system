@@ -108,7 +108,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div>
+    <div className="page-enter">
       <div className="page-header">
         <h2>Reports</h2>
         {data && (

@@ -30,7 +30,7 @@ export default function TrialBalance() {
   const balanced = Math.abs(totalDebit - totalCredit) < 0.01;
 
   return (
-    <div className="accounting-page">
+    <div className="accounting-page page-enter">
       <div className="page-header"><h2>Trial Balance</h2></div>
       <div className="report-controls">
         <FormField label="As of Date" htmlFor="tb-asof">
