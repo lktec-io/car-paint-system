@@ -15,36 +15,38 @@
   flex-wrap: wrap;
 }
 
-.datatable-search {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  background-color: var(--color-bg-tertiary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: 0.35rem 0.65rem;
-  flex: 1;
-  min-width: 180px;
-  max-width: 320px;
-}
-
-.datatable-search svg {
-  color: var(--color-text-secondary);
-  font-size: 1rem;
+.search-input-wrapper {
+  position: relative;
+  width: 280px;
+  max-width: 100%;
   flex-shrink: 0;
 }
 
-.datatable-search input {
-  background: none;
-  border: none;
-  outline: none;
-  padding: 0;
-  font-size: 0.875rem;
-  color: var(--color-text-primary);
-  width: 100%;
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  pointer-events: none;
+  transition: color 0.25s ease;
+  z-index: 1;
 }
 
-.datatable-search input::placeholder { color: var(--color-text-secondary); }
+.search-input-wrapper:focus-within .search-icon {
+  color: var(--color-accent-green);
+}
+
+.search-input {
+  padding-left: 38px !important;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+@media (max-width: 768px) {
+  .search-input-wrapper { width: 100%; }
+}
 
 .datatable-toolbar-actions {
   display: flex;

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { MdSearch, MdArrowUpward, MdArrowDownward, MdInbox, MdChevronLeft, MdChevronRight } from 'react-icons/md';
+import { MdArrowUpward, MdArrowDownward, MdInbox, MdChevronLeft, MdChevronRight } from 'react-icons/md';
+import { FiSearch } from 'react-icons/fi';
 import '../../styles/DataTable.css';
 
 /**
@@ -92,13 +93,14 @@ export default function DataTable({
       {(searchable || toolbar) && (
         <div className="datatable-toolbar">
           {searchable && (
-            <div className="datatable-search">
-              <MdSearch />
+            <div className="search-input-wrapper">
+              <FiSearch className="search-icon" />
               <input
                 type="text"
                 placeholder={searchPlaceholder}
                 value={search}
                 onChange={(e) => handleSearch(e.target.value)}
+                className="search-input"
               />
             </div>
           )}

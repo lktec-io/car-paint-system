@@ -1,3 +1,13 @@
+@keyframes modalOverlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes modalContentIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -7,10 +17,8 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  animation: fade-in 0.15s ease;
+  animation: modalOverlayIn 0.2s ease both;
 }
-
-@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 
 .modal {
   background-color: var(--color-bg-secondary);
@@ -21,10 +29,8 @@
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  animation: slide-up 0.2s ease;
+  animation: modalContentIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-
-@keyframes slide-up { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 .modal--sm { max-width: 420px; }
 .modal--md { max-width: 580px; }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { MdTrendingUp, MdAccountBalance, MdWork, MdWarning, MdReceipt, MdRefresh } from 'react-icons/md';
+import { MdTrendingUp, MdAccountBalance, MdWork, MdWarning, MdReceipt } from 'react-icons/md';
+import { FiRefreshCw, FiLoader } from 'react-icons/fi';
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -81,8 +82,8 @@ export default function Dashboard() {
           <p>{today}</p>
         </div>
         <button className="refresh-btn" onClick={() => load(true)} disabled={refreshing}>
-          <MdRefresh className={refreshing ? 'spin' : ''} />
-          {refreshing ? 'Refreshing…' : 'Refresh'}
+          {refreshing ? <FiLoader className="spin" /> : <FiRefreshCw />}
+          {refreshing ? 'Refreshing...' : 'Refresh Data'}
         </button>
       </div>
 

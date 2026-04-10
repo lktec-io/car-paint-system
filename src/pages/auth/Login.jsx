@@ -89,6 +89,9 @@ export default function Login() {
                 id="email"
                 type="email"
                 autoComplete="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
                 placeholder="admin@carpaint.com"
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); setSubmitError(''); }}
@@ -111,6 +114,8 @@ export default function Login() {
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
+                autoCapitalize="none"
+                autoCorrect="off"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setSubmitError(''); }}
