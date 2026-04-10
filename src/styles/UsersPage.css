@@ -1,5 +1,31 @@
 .users-page {}
 
+/* ── User table avatar ──────────────────────────────────────── */
+.user-avatar-table {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.user-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(46, 204, 113, 0.15);
+  color: var(--color-accent-green);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
 .page-header {
   display: flex;
   align-items: center;

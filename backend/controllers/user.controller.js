@@ -4,7 +4,7 @@ const { hashPassword } = require('../utils/hashPassword');
 async function listUsers(req, res, next) {
   try {
     const [rows] = await pool.query(
-      `SELECT id, full_name, email, role, is_active, last_login, created_at
+      `SELECT id, full_name, email, profile_image, role, is_active, last_login, created_at
        FROM users WHERE organization_id = ? ORDER BY created_at DESC`,
       [req.orgId]
     );
@@ -15,7 +15,7 @@ async function listUsers(req, res, next) {
 async function getUser(req, res, next) {
   try {
     const [rows] = await pool.query(
-      `SELECT id, full_name, email, role, is_active, last_login, created_at
+      `SELECT id, full_name, email, profile_image, role, is_active, last_login, created_at
        FROM users WHERE id = ? AND organization_id = ? LIMIT 1`,
       [req.params.id, req.orgId]
     );
@@ -26,7 +26,7 @@ async function getUser(req, res, next) {
 
 async function createUser(req, res, next) {
   try {
-    const { full_name, email, password, role } = req.body;
+    const { full_name, email, password, role, profile_image } = req.body;
 
     // Prevent duplicate email within the org (email is globally unique by DB constraint)
     const [existing] = await pool.query('SELECT id FROM users WHERE email = ?', [email]);
@@ -36,16 +36,16 @@ async function createUser(req, res, next) {
 
     const hash = await hashPassword(password);
     const [result] = await pool.query(
-      `INSERT INTO users (organization_id, full_name, email, password_hash, role, is_active)
-       VALUES (?, ?, ?, ?, ?, TRUE)`,
-      [req.orgId, full_name, email, hash, role]
+      `INSERT INTO users (organization_id, full_name, email, profile_image, password_hash, role, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, TRUE)`,
+      [req.orgId, full_name, email, profile_image || null, hash, role]
     );
 
     req.auditEntityId = result.insertId;
     req.auditNew = { full_name, email, role };
 
     const [created] = await pool.query(
-      'SELECT id, full_name, email, role, is_active, created_at FROM users WHERE id = ?',
+      'SELECT id, full_name, email, profile_image, role, is_active, created_at FROM users WHERE id = ?',
       [result.insertId]
     );
 
@@ -56,7 +56,7 @@ async function createUser(req, res, next) {
 async function updateUser(req, res, next) {
   try {
     const { id } = req.params;
-    const { full_name, email, password, role, is_active } = req.body;
+    const { full_name, email, password, role, is_active, profile_image } = req.body;
 
     const [rows] = await pool.query(
       'SELECT * FROM users WHERE id = ? AND organization_id = ? LIMIT 1',
@@ -76,6 +76,7 @@ async function updateUser(req, res, next) {
     if (email !== undefined) updates.email = email;
     if (role !== undefined) updates.role = role;
     if (is_active !== undefined) updates.is_active = is_active;
+    if (profile_image !== undefined) updates.profile_image = profile_image || null;
     if (password) updates.password_hash = await hashPassword(password);
 
     if (!Object.keys(updates).length) {
@@ -91,7 +92,7 @@ async function updateUser(req, res, next) {
     req.auditNew = updates;
 
     const [updated] = await pool.query(
-      'SELECT id, full_name, email, role, is_active, last_login, created_at FROM users WHERE id = ?',
+      'SELECT id, full_name, email, profile_image, role, is_active, last_login, created_at FROM users WHERE id = ?',
       [id]
     );
     res.json({ success: true, data: updated[0] });

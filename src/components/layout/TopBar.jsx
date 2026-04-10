@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  MdMenu, MdNotifications, MdWbSunny, MdNightlight, MdLogout, MdExpandMore,
+  MdNotifications, MdWbSunny, MdNightlight, MdLogout, MdExpandMore,
   MdWarning, MdError, MdCheckCircle, MdInfo,
 } from 'react-icons/md';
 import useUiStore from '../../stores/uiStore';
@@ -30,7 +30,7 @@ const PAGE_TITLES = {
   '/audit':                      'Audit Logs',
 };
 
-export default function TopBar() {
+export default function TopBar({ onLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { setSidebarOpen, sidebarOpen, theme, toggleTheme } = useUiStore();
@@ -74,8 +74,8 @@ export default function TopBar() {
 
   async function handleLogout() {
     setUserMenuOpen(false);
-    await logout();
-    navigate('/login', { replace: true });
+    await (onLogout ? onLogout() : logout());
+    if (!onLogout) navigate('/login', { replace: true });
   }
 
   return (
@@ -154,7 +154,11 @@ export default function TopBar() {
             onClick={() => { setUserMenuOpen((s) => !s); setNotifOpen(false); }}
             aria-label="User menu"
           >
-            <div className="user-avatar">{initials}</div>
+            {user?.profile_image ? (
+              <img src={user.profile_image} alt="" className="topbar-avatar" />
+            ) : (
+              <div className="user-avatar">{initials}</div>
+            )}
             <span className="user-name">{user?.full_name}</span>
             <MdExpandMore style={{ color: 'var(--color-text-secondary)', fontSize: '1rem' }} />
           </button>

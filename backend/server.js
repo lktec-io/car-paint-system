@@ -22,6 +22,7 @@ const expenseRoutes   = require('./routes/expense.routes');
 const jobRoutes         = require('./routes/job.routes');
 const dashboardRoutes   = require('./routes/dashboard.routes');
 const auditRoutes       = require('./routes/audit.routes');
+const uploadRoutes      = require('./routes/upload.routes');
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.use('/api/expenses',        expenseRoutes);
 app.use('/api/jobs',            jobRoutes);
 app.use('/api/dashboard',       dashboardRoutes);
 app.use('/api/audit-logs',      auditRoutes);
+app.use('/api/upload',          uploadRoutes);
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 app.use((req, res) => {

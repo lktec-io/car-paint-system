@@ -24,6 +24,22 @@
   padding: 1.5rem;
 }
 
+/* ── Logout overlay ─────────────────────────────────────────── */
+.logout-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--color-bg-primary, #0F1923);
+  animation: logoutFade 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+  pointer-events: all;
+}
+
+@keyframes logoutFade {
+  0%   { opacity: 0; backdrop-filter: blur(0px); }
+  50%  { opacity: 0.7; backdrop-filter: blur(4px); }
+  100% { opacity: 1; backdrop-filter: blur(10px); }
+}
+
 @media (max-width: 767px) {
   .app-content {
     margin-left: 0 !important;

@@ -227,6 +227,20 @@
   flex-shrink: 0;
 }
 
+.topbar-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--color-border);
+  flex-shrink: 0;
+  transition: border-color 0.2s ease;
+}
+
+.topbar-avatar:hover {
+  border-color: var(--color-accent-green);
+}
+
 .user-name {
   font-size: 0.825rem;
   font-weight: 500;

@@ -6,13 +6,29 @@ import DataTable from '../../components/common/DataTable';
 import Modal from '../../components/common/Modal';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import FormField from '../../components/common/FormField';
+import ImageUpload from '../../components/common/ImageUpload';
 import { formatDateTime } from '../../utils/formatDate';
 import '../../styles/UsersPage.css';
 
 const ROLES = ['super_admin', 'accountant', 'store_manager', 'sales_officer', 'technician', 'viewer'];
 
 const COLUMNS = [
-  { key: 'full_name', label: 'Name' },
+  {
+    key: 'full_name',
+    label: 'Name',
+    render: (val, row) => (
+      <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+        {row.profile_image ? (
+          <img src={row.profile_image} alt="" className="user-avatar-table" />
+        ) : (
+          <span className="user-avatar-placeholder">
+            {(val || '?')[0].toUpperCase()}
+          </span>
+        )}
+        {val}
+      </span>
+    ),
+  },
   { key: 'email', label: 'Email' },
   {
     key: 'role',
@@ -51,7 +67,7 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editUser, setEditUser] = useState(null);
-  const [form, setForm] = useState({ full_name: '', email: '', password: '', role: 'viewer' });
+  const [form, setForm] = useState({ full_name: '', email: '', password: '', role: 'viewer', profile_image: '' });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [saving, setSaving] = useState(false);
@@ -73,7 +89,7 @@ export default function UsersPage() {
 
   function openCreate() {
     setEditUser(null);
-    setForm({ full_name: '', email: '', password: '', role: 'viewer' });
+    setForm({ full_name: '', email: '', password: '', role: 'viewer', profile_image: '' });
     setErrors({});
     setTouched({});
     setModalOpen(true);
@@ -81,7 +97,7 @@ export default function UsersPage() {
 
   function openEdit(user) {
     setEditUser(user);
-    setForm({ full_name: user.full_name, email: user.email, password: '', role: user.role });
+    setForm({ full_name: user.full_name, email: user.email, password: '', role: user.role, profile_image: user.profile_image || '' });
     setErrors({});
     setTouched({});
     setModalOpen(true);
@@ -106,7 +122,7 @@ export default function UsersPage() {
     if (Object.keys(touchAll()).length) return;
     setSaving(true);
     try {
-      const payload = { full_name: form.full_name, email: form.email, role: form.role };
+      const payload = { full_name: form.full_name, email: form.email, role: form.role, profile_image: form.profile_image || '' };
       if (form.password) payload.password = form.password;
       if (!editUser) payload.password = form.password;
 
@@ -191,6 +207,11 @@ export default function UsersPage() {
         }
       >
         <div className="user-form">
+          <ImageUpload
+            currentImage={form.profile_image}
+            onImageUploaded={(url) => setForm((prev) => ({ ...prev, profile_image: url }))}
+            label="Profile Photo"
+          />
           <div className="form-row">
             <FormField label="Full Name" error={touched.full_name && errors.full_name} required htmlFor="uf-name">
               <input id="uf-name" value={form.full_name} onChange={(e) => setField('full_name', e.target.value)} placeholder="Jane Smith" />
