@@ -32,7 +32,6 @@ export default function ProfitLoss() {
       <div className="report-controls">
         <FormField label="From" htmlFor="pl-start"><input id="pl-start" type="date" value={range.start} onChange={(e) => setRange((r) => ({ ...r, start: e.target.value }))} /></FormField>
         <FormField label="To" htmlFor="pl-end"><input id="pl-end" type="date" value={range.end} onChange={(e) => setRange((r) => ({ ...r, end: e.target.value }))} /></FormField>
-        <button className="btn btn-secondary" onClick={load} style={{ alignSelf: 'flex-end' }}>Refresh</button>
       </div>
 
       {loading ? <LoadingSpinner /> : result && (

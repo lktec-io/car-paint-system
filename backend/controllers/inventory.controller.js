@@ -124,4 +124,38 @@ async function createCategory(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { listItems, getItem, createItem, updateItem, deleteItem, lowStock, stockMovements, listCategories, createCategory };
+async function deleteStockMovement(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    const [movements] = await pool.query(
+      `SELECT sm.*, ii.id AS item_id, ii.quantity AS current_qty
+       FROM stock_movements sm
+       JOIN inventory_items ii ON sm.inventory_item_id = ii.id
+       WHERE sm.id = ? AND ii.organization_id = ?`,
+      [id, req.orgId]
+    );
+
+    if (!movements.length) return res.status(404).json({ success: false, error: 'Stock movement not found' });
+
+    const movement = movements[0];
+
+    let newQty;
+    if (movement.movement_type === 'in') {
+      newQty = parseFloat(movement.current_qty) - parseFloat(movement.quantity);
+    } else {
+      newQty = parseFloat(movement.current_qty) + parseFloat(movement.quantity);
+    }
+
+    if (newQty < 0) {
+      return res.status(400).json({ success: false, error: 'Cannot delete — would result in negative stock' });
+    }
+
+    await pool.query('UPDATE inventory_items SET quantity = ? WHERE id = ?', [newQty, movement.item_id]);
+    await pool.query('DELETE FROM stock_movements WHERE id = ?', [id]);
+
+    res.json({ success: true, data: { message: 'Stock movement deleted and inventory updated' } });
+  } catch (err) { next(err); }
+}
+
+module.exports = { listItems, getItem, createItem, updateItem, deleteItem, lowStock, stockMovements, listCategories, createCategory, deleteStockMovement };

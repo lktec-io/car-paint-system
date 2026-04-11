@@ -25,7 +25,7 @@ async function nextNumber(req, res, next) {
 async function list(req, res, next) {
   try {
     const [rows] = await pool.query(
-      `SELECT i.*, c.name AS customer_name, u.full_name AS created_by_name
+      `SELECT i.*, COALESCE(i.customer_name, c.name) AS customer_name, u.full_name AS created_by_name
        FROM invoices i
        LEFT JOIN customers c ON c.id = i.customer_id
        JOIN users u ON u.id = i.created_by
@@ -39,7 +39,7 @@ async function list(req, res, next) {
 async function get(req, res, next) {
   try {
     const [invoices] = await pool.query(
-      `SELECT i.*, c.name AS customer_name FROM invoices i LEFT JOIN customers c ON c.id = i.customer_id
+      `SELECT i.*, COALESCE(i.customer_name, c.name) AS customer_name FROM invoices i LEFT JOIN customers c ON c.id = i.customer_id
        WHERE i.id = ? AND i.organization_id = ? LIMIT 1`,
       [req.params.id, req.orgId]
     );
@@ -58,7 +58,7 @@ async function create(req, res, next) {
   try {
     await conn.beginTransaction();
 
-    const { customer_id, invoice_date, due_date, discount_percent, tax_percent, payment_method, notes, items, job_id } = req.body;
+    const { customer_name, customer_phone, invoice_date, due_date, discount_percent, tax_percent, payment_method, notes, items, job_id } = req.body;
 
     if (!Array.isArray(items) || !items.length) {
       await conn.rollback();
@@ -85,10 +85,10 @@ async function create(req, res, next) {
     const invNum = await generateReference({ prefix: 'INV', table: 'invoices', column: 'invoice_number', orgId: req.orgId, conn });
 
     const [result] = await conn.query(
-      `INSERT INTO invoices (organization_id, customer_id, invoice_number, invoice_date, due_date,
+      `INSERT INTO invoices (organization_id, customer_id, customer_name, customer_phone, invoice_number, invoice_date, due_date,
          subtotal, discount_percent, tax_percent, total_amount, amount_paid, payment_method, status, notes, job_id, created_by)
-       VALUES (?,?,?,?,?,?,?,?,?,0,?,?,?,?,?)`,
-      [req.orgId, customer_id || null, invNum, invoice_date, due_date, subtotal, discount_percent || 0, tax_percent || 0, total, payment_method || 'cash', 'sent', notes || null, job_id || null, req.user.id]
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,0,?,?,?,?,?)`,
+      [req.orgId, null, customer_name || null, customer_phone || null, invNum, invoice_date, due_date, subtotal, discount_percent || 0, tax_percent || 0, total, payment_method || 'cash', 'sent', notes || null, job_id || null, req.user.id]
     );
     const invoiceId = result.insertId;
 

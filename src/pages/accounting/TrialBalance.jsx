@@ -36,7 +36,6 @@ export default function TrialBalance() {
         <FormField label="As of Date" htmlFor="tb-asof">
           <input id="tb-asof" type="date" value={asOf} onChange={(e) => setAsOf(e.target.value)} />
         </FormField>
-        <button className="btn btn-secondary" onClick={load} style={{ alignSelf: 'flex-end' }}>Refresh</button>
       </div>
 
       {loading ? <LoadingSpinner /> : (

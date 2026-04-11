@@ -38,6 +38,8 @@ export default function InventoryPage() {
   const [editItem, setEditItem] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteMovTarget, setDeleteMovTarget] = useState(null);
+  const [deletingMov, setDeletingMov] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ item_name: '', sku: '', unit: 'pcs', quantity: '0', unit_cost: '', reorder_level: '0', category_id: '', supplier_id: '' });
   const [errors, setErrors] = useState({});
@@ -108,6 +110,17 @@ export default function InventoryPage() {
     finally { setDeleting(false); }
   }
 
+  async function handleDeleteMovement() {
+    setDeletingMov(true);
+    try {
+      await api.delete(`/inventory/movements/${deleteMovTarget.id}`);
+      addToast({ type: 'success', message: 'Movement deleted and stock updated' });
+      setDeleteMovTarget(null);
+      api.get('/inventory/movements').then(({ data }) => setMovements(data.data)).catch(() => {});
+    } catch (err) { addToast({ type: 'error', message: err.response?.data?.error || 'Delete failed' }); }
+    finally { setDeletingMov(false); }
+  }
+
   const isFormValid = Object.keys(validate(form)).length === 0;
 
   const ITEM_COLS = [
@@ -160,7 +173,15 @@ export default function InventoryPage() {
               ? <div className="card" style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-secondary)' }}>✓ All items are adequately stocked</div>
               : <DataTable columns={ITEM_COLS} data={lowStock} searchable />
           )}
-          {tab === TABS.movements && <DataTable columns={MOVE_COLS} data={movements} searchable searchPlaceholder="Search movements…" />}
+          {tab === TABS.movements && (
+            <DataTable columns={MOVE_COLS} data={movements} searchable searchPlaceholder="Search movements…"
+              actions={canManage ? (row) => (
+                <button className="btn-icon" style={{ color: 'var(--color-accent-red)' }} title="Delete movement" onClick={() => setDeleteMovTarget(row)}>
+                  <MdDelete />
+                </button>
+              ) : undefined}
+            />
+          )}
         </>
       )}
 
@@ -199,6 +220,12 @@ export default function InventoryPage() {
 
       <ConfirmDialog open={Boolean(deleteTarget)} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} loading={deleting}
         title="Delete Item" message={`Delete "${deleteTarget?.item_name}"? This cannot be undone.`} variant="danger"
+      />
+
+      <ConfirmDialog open={Boolean(deleteMovTarget)} onClose={() => setDeleteMovTarget(null)} onConfirm={handleDeleteMovement} loading={deletingMov}
+        title="Delete Stock Movement"
+        message={`Delete this ${deleteMovTarget?.movement_type} movement of ${deleteMovTarget?.quantity} ${deleteMovTarget?.item_name}? Stock will be reversed.`}
+        variant="danger"
       />
     </div>
   );

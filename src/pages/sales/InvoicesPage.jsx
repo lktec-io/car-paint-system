@@ -26,13 +26,12 @@ const blankItem = () => ({ description: '', quantity: '1', unit_price: '', inven
 function blankForm() {
   const today = new Date().toISOString().split('T')[0];
   const due   = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0];
-  return { customer_id: '', invoice_date: today, due_date: due, discount_percent: '0', tax_percent: '0', payment_method: 'cash', notes: '', items: [blankItem()] };
+  return { customer_name: '', customer_phone: '', invoice_date: today, due_date: due, discount_percent: '0', tax_percent: '0', payment_method: 'cash', notes: '', items: [blankItem()] };
 }
 
 export default function InvoicesPage() {
   const addToast = useUiStore(s => s.addToast);
   const [rows, setRows]           = useState([]);
-  const [customers, setCustomers] = useState([]);
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading]     = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
@@ -46,11 +45,10 @@ export default function InvoicesPage() {
 
   const load = useCallback(async () => {
     try {
-      const [inv, cust, items] = await Promise.all([
-        api.get('/invoices'), api.get('/customers'), api.get('/inventory'),
+      const [inv, items] = await Promise.all([
+        api.get('/invoices'), api.get('/inventory'),
       ]);
       setRows(inv.data.data);
-      setCustomers(cust.data.data);
       setInventory(items.data.data);
     } catch { addToast({ type: 'error', message: 'Failed to load data' }); }
     finally { setLoading(false); }
@@ -146,12 +144,14 @@ export default function InvoicesPage() {
             </button>
           </div>
           <div className="form-row">
-            <FormField label="Customer" htmlFor="inv-cust">
-              <select id="inv-cust" value={form.customer_id} onChange={e => setField('customer_id', e.target.value)}>
-                <option value="">Walk-in / No customer</option>
-                {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+            <FormField label="Customer Name" htmlFor="inv-cust">
+              <input id="inv-cust" placeholder="Customer name (leave blank for walk-in)" value={form.customer_name} onChange={e => setField('customer_name', e.target.value)} />
             </FormField>
+            <FormField label="Customer Phone (optional)" htmlFor="inv-phone">
+              <input id="inv-phone" type="tel" placeholder="Phone number" value={form.customer_phone} onChange={e => setField('customer_phone', e.target.value)} />
+            </FormField>
+          </div>
+          <div className="form-row">
             <FormField label="Payment Method" htmlFor="inv-pm">
               <select id="inv-pm" value={form.payment_method} onChange={e => setField('payment_method', e.target.value)}>
                 <option value="cash">Cash</option>

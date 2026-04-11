@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MdDirectionsCar, MdVisibility, MdVisibilityOff, MdErrorOutline } from 'react-icons/md';
+import { MdVisibility, MdVisibilityOff, MdErrorOutline } from 'react-icons/md';
 import api from '../../api/axios';
 import useAuthStore from '../../stores/authStore';
 import useUiStore from '../../stores/uiStore';
@@ -67,9 +67,7 @@ export default function Login() {
     <div className="login-page">
       <div className="login-card">
         <div className="login-brand">
-          <div className="login-brand-icon">
-            <MdDirectionsCar />
-          </div>
+          <img src="/logo.svg" alt="Silas Paint Store" className="login-logo" />
           <h1>Silas Paint Store</h1>
           <p>Car Paint Shop Management System</p>
         </div>

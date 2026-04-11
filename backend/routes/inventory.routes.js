@@ -28,4 +28,6 @@ router.delete('/:id', authorize(MANAGE), auditLog('DELETE','inventory_items'), p
 
 router.post('/categories', authorize(MANAGE), body('name').trim().notEmpty(), validate, ctrl.createCategory);
 
+router.delete('/movements/:id', authorize(MANAGE), param('id').isInt(), validate, ctrl.deleteStockMovement);
+
 module.exports = router;

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  MdDirectionsCar, MdDashboard, MdPeople, MdAccountBalance,
-  MdInventory2, MdReceipt, MdGroup, MdMoneyOff,
+  MdDashboard, MdPeople, MdAccountBalance,
+  MdInventory2, MdReceipt, MdMoneyOff,
   MdLocalShipping, MdBarChart, MdExpandMore,
   MdChevronLeft, MdChevronRight, MdPointOfSale,
 } from 'react-icons/md';
@@ -50,8 +50,7 @@ const NAV_CONFIG = [
     Icon: MdPointOfSale,
     roles: ['super_admin', 'accountant', 'store_manager', 'sales_officer'],
     children: [
-      { path: '/sales/invoices',   label: 'Invoices',   Icon: MdReceipt },
-      { path: '/sales/customers',  label: 'Customers',  Icon: MdGroup },
+      { path: '/sales/invoices', label: 'Invoices', Icon: MdReceipt },
     ],
   },
   {
@@ -191,7 +190,7 @@ export default function Sidebar() {
         {/* Header */}
         <div className="sidebar-header">
           <div className="sidebar-logo">
-            <MdDirectionsCar className="sidebar-logo-icon" />
+            <img src="/logo.svg" alt="Silas Paint Store" className="sidebar-logo-img" />
             {!collapsed && <span className="sidebar-logo-text">Silas Paint Store</span>}
           </div>
           <button className="sidebar-toggle" onClick={toggleSidebar} aria-label="Toggle sidebar">

@@ -108,16 +108,19 @@ async function deleteUser(req, res, next) {
     }
 
     const [rows] = await pool.query(
-      'SELECT id FROM users WHERE id = ? AND organization_id = ? LIMIT 1',
+      'SELECT id, role FROM users WHERE id = ? AND organization_id = ? LIMIT 1',
       [id, req.orgId]
     );
     if (!rows.length) return res.status(404).json({ success: false, error: 'User not found' });
 
-    // Soft delete: deactivate instead of hard delete to preserve referential integrity
-    await pool.query('UPDATE users SET is_active = FALSE WHERE id = ?', [id]);
+    if (rows[0].role === 'super_admin') {
+      return res.status(403).json({ success: false, error: 'Cannot delete super admin accounts' });
+    }
+
+    await pool.query('DELETE FROM users WHERE id = ? AND organization_id = ?', [id, req.orgId]);
     req.auditEntityId = id;
 
-    res.json({ success: true, data: { message: 'User deactivated' } });
+    res.json({ success: true, data: { message: 'User deleted successfully' } });
   } catch (err) { next(err); }
 }
 

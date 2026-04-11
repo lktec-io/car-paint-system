@@ -14,7 +14,6 @@ import ProfitLoss from '../pages/accounting/ProfitLoss';
 import BalanceSheet from '../pages/accounting/BalanceSheet';
 import InventoryPage from '../pages/inventory/InventoryPage';
 import InvoicesPage from '../pages/sales/InvoicesPage';
-import CustomersPage from '../pages/sales/CustomersPage';
 import ExpensesPage from '../pages/expenses/ExpensesPage';
 import SuppliersPage from '../pages/suppliers/SuppliersPage';
 import ReportsPage from '../pages/reports/ReportsPage';
@@ -99,15 +98,6 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/sales/customers"
-          element={
-            <ProtectedRoute allowedRoles={['super_admin', 'accountant', 'store_manager', 'sales_officer']}>
-              <CustomersPage />
-            </ProtectedRoute>
-          }
-        />
-
         {/* Expenses */}
         <Route
           path="/expenses"
