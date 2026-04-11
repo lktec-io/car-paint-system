@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   MdDirectionsCar, MdDashboard, MdPeople, MdAccountBalance,
-  MdInventory2, MdReceipt, MdGroup, MdMoneyOff, MdBuild,
-  MdLocalShipping, MdBarChart, MdHistory, MdExpandMore,
+  MdInventory2, MdReceipt, MdGroup, MdMoneyOff,
+  MdLocalShipping, MdBarChart, MdExpandMore,
   MdChevronLeft, MdChevronRight, MdPointOfSale,
 } from 'react-icons/md';
 import useUiStore from '../../stores/uiStore';
@@ -33,7 +33,6 @@ const NAV_CONFIG = [
     children: [
       { path: '/accounting/accounts',       label: 'Chart of Accounts', Icon: MdAccountBalance },
       { path: '/accounting/journal',        label: 'Journal Entries',   Icon: MdReceipt },
-      { path: '/accounting/ledger',         label: 'General Ledger',    Icon: MdBarChart },
       { path: '/accounting/trial-balance',  label: 'Trial Balance',     Icon: MdBarChart },
       { path: '/accounting/profit-loss',    label: 'Profit & Loss',     Icon: MdBarChart },
       { path: '/accounting/balance-sheet',  label: 'Balance Sheet',     Icon: MdBarChart },
@@ -62,12 +61,6 @@ const NAV_CONFIG = [
     roles: ['super_admin', 'accountant', 'store_manager'],
   },
   {
-    path: '/jobs',
-    label: 'Jobs',
-    Icon: MdBuild,
-    roles: ALL_ROLES,
-  },
-  {
     path: '/suppliers',
     label: 'Suppliers',
     Icon: MdLocalShipping,
@@ -80,16 +73,10 @@ const NAV_CONFIG = [
     Icon: MdBarChart,
     roles: ['super_admin', 'accountant', 'store_manager', 'sales_officer', 'viewer'],
   },
-  {
-    path: '/audit',
-    label: 'Audit Logs',
-    Icon: MdHistory,
-    roles: ['super_admin'],
-  },
 ];
 
 // Bottom nav shows the 5 most important items on mobile
-const BOTTOM_NAV_PATHS = ['/dashboard', '/inventory', '/jobs', '/sales/invoices', '/reports'];
+const BOTTOM_NAV_PATHS = ['/dashboard', '/inventory', '/sales/invoices', '/reports'];
 
 function NavItem({ item, collapsed }) {
   return (
@@ -185,8 +172,11 @@ export default function Sidebar() {
     ? user.full_name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
     : '??';
 
-  // Bottom nav items (mobile)
-  const bottomNavItems = NAV_CONFIG.filter(
+  // Bottom nav items (mobile) — flatten top-level + children to catch nested paths
+  const allNavItems = NAV_CONFIG.flatMap((item) =>
+    item.children ? item.children.map((c) => ({ ...c, roles: item.roles })) : [item]
+  );
+  const bottomNavItems = allNavItems.filter(
     (item) => item.path && BOTTOM_NAV_PATHS.includes(item.path) && item.roles?.includes(role)
   );
 
@@ -202,7 +192,7 @@ export default function Sidebar() {
         <div className="sidebar-header">
           <div className="sidebar-logo">
             <MdDirectionsCar className="sidebar-logo-icon" />
-            {!collapsed && <span className="sidebar-logo-text">AutoShine</span>}
+            {!collapsed && <span className="sidebar-logo-text">Silas Paint Store</span>}
           </div>
           <button className="sidebar-toggle" onClick={toggleSidebar} aria-label="Toggle sidebar">
             {collapsed ? <MdChevronRight /> : <MdChevronLeft />}
@@ -247,7 +237,7 @@ export default function Sidebar() {
             }
           >
             <item.Icon />
-            <span>{item.label}</span>
+            <span>{item.path === '/sales/invoices' ? 'Sales' : item.label}</span>
           </NavLink>
         ))}
       </nav>

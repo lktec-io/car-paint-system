@@ -70,7 +70,7 @@ export default function Login() {
           <div className="login-brand-icon">
             <MdDirectionsCar />
           </div>
-          <h1>AutoShine</h1>
+          <h1>Silas Paint Store</h1>
           <p>Car Paint Shop Management System</p>
         </div>
 
@@ -157,7 +157,7 @@ export default function Login() {
         </form>
 
         <div className="login-footer">
-          <span>AutoShine &copy; {new Date().getFullYear()} — All rights reserved</span>
+          <span>Silas Paint Store &copy; {new Date().getFullYear()} — All rights reserved</span>
         </div>
       </div>
     </div>

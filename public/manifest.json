@@ -1,7 +1,7 @@
 {
-  "name": "Car Paint Shop Manager",
-  "short_name": "PaintShop",
-  "description": "Enterprise Car Paint Shop Accounting & Management System",
+  "name": "Silas Paint Store",
+  "short_name": "Silas Paint",
+  "description": "Silas Paint Store — Car Paint Shop Management System",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0F1923",

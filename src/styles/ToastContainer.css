@@ -67,3 +67,16 @@
 }
 
 .toast-close:hover { color: var(--color-text-primary); }
+
+@media (max-width: 767px) {
+  .toast-container {
+    top: auto;
+    bottom: calc(60px + 0.75rem); /* above bottom nav */
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+    max-width: 100%;
+    max-height: 50vh;
+    overflow: hidden;
+  }
+}

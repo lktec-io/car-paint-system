@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { MdAdd } from 'react-icons/md';
+import { MdAdd, MdEdit } from 'react-icons/md';
 import api from '../../api/axios';
 import useUiStore from '../../stores/uiStore';
 import DataTable from '../../components/common/DataTable';
@@ -32,6 +32,7 @@ export default function ExpensesPage() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading]       = useState(true);
   const [open, setOpen]             = useState(false);
+  const [editExpense, setEditExpense] = useState(null);
   const [catOpen, setCatOpen]       = useState(false);
   const [saving, setSaving]         = useState(false);
   const [catName, setCatName]       = useState('');
@@ -53,7 +54,8 @@ export default function ExpensesPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  function openCreate() { setFormState(blank()); setErrors({}); setTouched({}); setOpen(true); }
+  function openCreate() { setEditExpense(null); setFormState(blank()); setErrors({}); setTouched({}); setOpen(true); }
+  function openEdit(r) { setEditExpense(r); setFormState({ expense_category_id: r.expense_category_id, amount: String(r.amount), expense_date: r.expense_date?.split('T')[0] || r.expense_date, description: r.description || '', payment_method: r.payment_method }); setErrors({}); setTouched({}); setOpen(true); }
 
   function setField(k, v) {
     const next = { ...form, [k]: v };
@@ -66,8 +68,13 @@ export default function ExpensesPage() {
     if (Object.keys(errs).length) return;
     setSaving(true);
     try {
-      await api.post('/expenses', { ...form, amount: parseFloat(form.amount) });
-      addToast({ type: 'success', message: 'Expense recorded' });
+      if (editExpense) {
+        await api.put(`/expenses/${editExpense.id}`, { ...form, amount: parseFloat(form.amount) });
+        addToast({ type: 'success', message: 'Expense updated' });
+      } else {
+        await api.post('/expenses', { ...form, amount: parseFloat(form.amount) });
+        addToast({ type: 'success', message: 'Expense recorded' });
+      }
       setOpen(false); load();
     } catch (err) { addToast({ type: 'error', message: err.response?.data?.error || 'Save failed' }); }
     finally { setSaving(false); }
@@ -98,12 +105,16 @@ export default function ExpensesPage() {
         </div>
       </div>
 
-      <DataTable columns={COLS} data={rows} loading={loading} searchable searchPlaceholder="Search expenses…" />
+      <DataTable columns={COLS} data={rows} loading={loading} searchable searchPlaceholder="Search expenses…"
+        actions={r => (
+          <button className="btn-icon" title="Edit" onClick={() => openEdit(r)}><MdEdit /></button>
+        )}
+      />
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Record Expense" size="md"
+      <Modal open={open} onClose={() => setOpen(false)} title={editExpense ? 'Edit Expense' : 'Record Expense'} size="md"
         footer={<>
           <button className="btn btn-secondary" onClick={() => setOpen(false)} disabled={saving}>Cancel</button>
-          <button className="btn btn-primary" onClick={save} disabled={saving || Object.keys(validate(form)).length > 0}>{saving ? 'Saving…' : 'Save'}</button>
+          <button className="btn btn-primary" onClick={save} disabled={saving || Object.keys(validate(form)).length > 0}>{saving ? 'Saving…' : editExpense ? 'Save' : 'Record'}</button>
         </>}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

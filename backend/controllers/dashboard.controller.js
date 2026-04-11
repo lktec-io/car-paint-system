@@ -17,16 +17,6 @@ async function getSummary(req, res, next) {
       [orgId, monthStart]
     );
 
-    const [[jobStats]] = await pool.query(
-      `SELECT
-         COUNT(*) AS total,
-         SUM(status = 'pending') AS pending,
-         SUM(status = 'in_progress') AS in_progress,
-         SUM(status = 'completed') AS completed
-       FROM jobs WHERE organization_id = ?`,
-      [orgId]
-    );
-
     const [[invoiceStats]] = await pool.query(
       `SELECT
          SUM(status = 'sent') AS sent,
@@ -50,7 +40,6 @@ async function getSummary(req, res, next) {
         revenue: { month: parseFloat(revenue.total), collected: parseFloat(revenue.paid) },
         expenses: { month: parseFloat(expenses.total) },
         profit:   { month: parseFloat(revenue.paid) - parseFloat(expenses.total) },
-        jobs:     jobStats,
         invoices: invoiceStats,
         lowStock,
       },

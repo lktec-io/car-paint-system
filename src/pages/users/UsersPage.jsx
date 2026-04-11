@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { MdAdd, MdEdit, MdBlock, MdCheckCircle } from 'react-icons/md';
+import { MdAdd, MdEdit, MdBlock, MdCheckCircle, MdDelete } from 'react-icons/md';
 import api from '../../api/axios';
 import useUiStore from '../../stores/uiStore';
 import DataTable from '../../components/common/DataTable';
@@ -73,6 +73,8 @@ export default function UsersPage() {
   const [saving, setSaving] = useState(false);
   const [confirmUser, setConfirmUser] = useState(null);
   const [confirming, setConfirming] = useState(false);
+  const [deleteUser, setDeleteUser] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -142,6 +144,21 @@ export default function UsersPage() {
     }
   }
 
+  async function handleDelete() {
+    if (!deleteUser) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/users/${deleteUser.id}`);
+      addToast({ type: 'success', message: 'User deleted' });
+      setDeleteUser(null);
+      loadUsers();
+    } catch (err) {
+      addToast({ type: 'error', message: err.response?.data?.error || 'Delete failed' });
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   async function handleToggle() {
     if (!confirmUser) return;
     setConfirming(true);
@@ -184,9 +201,17 @@ export default function UsersPage() {
               className="btn-icon"
               title={row.is_active ? 'Deactivate' : 'Activate'}
               onClick={() => setConfirmUser(row)}
-              style={{ color: row.is_active ? 'var(--color-accent-red)' : 'var(--color-accent-green)' }}
+              style={{ color: row.is_active ? 'var(--color-accent-orange)' : 'var(--color-accent-green)' }}
             >
               {row.is_active ? <MdBlock /> : <MdCheckCircle />}
+            </button>
+            <button
+              className="btn-icon"
+              title="Delete user"
+              onClick={() => setDeleteUser(row)}
+              style={{ color: 'var(--color-accent-red)' }}
+            >
+              <MdDelete />
             </button>
           </>
         )}
@@ -241,6 +266,16 @@ export default function UsersPage() {
         title={confirmUser?.is_active ? 'Deactivate User' : 'Activate User'}
         message={`Are you sure you want to ${confirmUser?.is_active ? 'deactivate' : 'activate'} ${confirmUser?.full_name}?`}
         variant={confirmUser?.is_active ? 'danger' : 'warning'}
+      />
+
+      <ConfirmDialog
+        open={Boolean(deleteUser)}
+        onClose={() => setDeleteUser(null)}
+        onConfirm={handleDelete}
+        loading={deleting}
+        title="Delete User"
+        message={`Permanently delete "${deleteUser?.full_name}"? This cannot be undone.`}
+        variant="danger"
       />
     </div>
   );

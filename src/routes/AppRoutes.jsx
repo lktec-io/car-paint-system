@@ -9,7 +9,6 @@ import Dashboard from '../pages/dashboard/Dashboard';
 import UsersPage from '../pages/users/UsersPage';
 import ChartOfAccounts from '../pages/accounting/ChartOfAccounts';
 import JournalEntries from '../pages/accounting/JournalEntries';
-import GeneralLedger from '../pages/accounting/GeneralLedger';
 import TrialBalance from '../pages/accounting/TrialBalance';
 import ProfitLoss from '../pages/accounting/ProfitLoss';
 import BalanceSheet from '../pages/accounting/BalanceSheet';
@@ -17,10 +16,8 @@ import InventoryPage from '../pages/inventory/InventoryPage';
 import InvoicesPage from '../pages/sales/InvoicesPage';
 import CustomersPage from '../pages/sales/CustomersPage';
 import ExpensesPage from '../pages/expenses/ExpensesPage';
-import JobsPage from '../pages/jobs/JobsPage';
 import SuppliersPage from '../pages/suppliers/SuppliersPage';
 import ReportsPage from '../pages/reports/ReportsPage';
-import AuditLogPage from '../pages/audit/AuditLogPage';
 
 export default function AppRoutes() {
   return (
@@ -62,14 +59,6 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute allowedRoles={['super_admin', 'accountant']}>
               <JournalEntries />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/accounting/ledger"
-          element={
-            <ProtectedRoute allowedRoles={['super_admin', 'accountant']}>
-              <GeneralLedger />
             </ProtectedRoute>
           }
         />
@@ -129,9 +118,6 @@ export default function AppRoutes() {
           }
         />
 
-        {/* Jobs */}
-        <Route path="/jobs" element={<JobsPage />} />
-
         {/* Suppliers */}
         <Route
           path="/suppliers"
@@ -152,15 +138,6 @@ export default function AppRoutes() {
           }
         />
 
-        {/* Audit */}
-        <Route
-          path="/audit"
-          element={
-            <ProtectedRoute allowedRoles={['super_admin']}>
-              <AuditLogPage />
-            </ProtectedRoute>
-          }
-        />
       </Route>
 
       {/* Redirects */}

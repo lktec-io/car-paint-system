@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { MdTrendingUp, MdAccountBalance, MdWork, MdWarning, MdReceipt } from 'react-icons/md';
+import { MdTrendingUp, MdAccountBalance, MdWarning, MdReceipt } from 'react-icons/md';
 import { FiRefreshCw, FiLoader } from 'react-icons/fi';
 import {
-  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
+  AreaChart, Area, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 import api from '../../api/axios';
@@ -99,9 +99,6 @@ export default function Dashboard() {
         <StatCard icon={<MdReceipt />} label="Outstanding Balance" color="orange" loading={loading}
           value={s ? formatCurrency(s.invoices.outstanding) : '—'}
           sub={s ? `${s.invoices.overdue || 0} overdue` : undefined} />
-        <StatCard icon={<MdWork />} label="Active Jobs" color="blue" loading={loading}
-          value={s ? String(parseInt(s.jobs.in_progress || 0) + parseInt(s.jobs.pending || 0)) : '—'}
-          sub={s ? `${s.jobs.completed || 0} completed total` : undefined} />
       </div>
 
       {/* Chart filters */}
@@ -213,27 +210,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Jobs status bar chart */}
-      {s && (
-        <div className="chart-card" style={{ marginTop: '1rem' }}>
-          <p className="chart-card-title">Jobs by Status</p>
-          <ResponsiveContainer width="100%" height={160}>
-            <BarChart layout="vertical" data={[
-              { name: 'Pending',     value: parseInt(s.jobs.pending||0) },
-              { name: 'In Progress', value: parseInt(s.jobs.in_progress||0) },
-              { name: 'Completed',   value: parseInt(s.jobs.completed||0) },
-            ]} margin={{ top: 0, right: 20, left: 20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-              <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }} allowDecimals={false} />
-              <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }} width={80} />
-              <Tooltip contentStyle={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', fontSize: 12 }} />
-              <Bar dataKey="value" name="Jobs" radius={[0, 6, 6, 0]} isAnimationActive>
-                {[{ fill: '#e67e22' }, { fill: '#3498db' }, { fill: '#2ecc71' }].map((c, i) => <Cell key={i} fill={c.fill} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      )}
     </div>
   );
 }
