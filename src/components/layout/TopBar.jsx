@@ -16,7 +16,7 @@ const PAGE_TITLES = {
   '/accounting/profit-loss':    'Profit & Loss',
   '/accounting/balance-sheet':  'Balance Sheet',
   '/inventory':                 'Inventory',
-  '/sales/invoices':            'Invoices',
+  '/sales/invoices':            'Sales',
   '/expenses':                  'Expenses',
   '/suppliers':                 'Suppliers',
   '/reports':                   'Reports & Analytics',
