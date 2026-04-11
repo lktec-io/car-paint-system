@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MdTrendingUp, MdAccountBalance, MdWarning, MdReceipt } from 'react-icons/md';
 import { FiRefreshCw, FiLoader } from 'react-icons/fi';
 import {
@@ -16,10 +16,6 @@ import '../../styles/Dashboard.css';
 const PIE_COLORS = ['#F97316','#FB923C','#FDBA74','#3498db','#2ecc71','#e74c3c','#9b59b6','#1abc9c'];
 
 const STATUS_CLASS = { invoice: 'badge-info', expense: 'badge-danger' };
-
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const currentYear = new Date().getFullYear();
-const YEARS = [currentYear, currentYear - 1, currentYear - 2];
 
 export default function Dashboard() {
   const addToast  = useUiStore(s => s.addToast);
