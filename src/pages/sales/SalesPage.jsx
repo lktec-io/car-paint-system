@@ -319,8 +319,8 @@ export default function SalesPage() {
                       </FormField>
                     </div>
 
-                    {/* Step 2: Description + Qty + Price + Total */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 80px 110px auto', gap: '0.65rem', alignItems: 'end' }}>
+                    {/* Step 2: Description + Qty + Price */}
+                    <div className="form-row" style={{ gridTemplateColumns: '2fr 1fr 1fr' }}>
                       <FormField label="Description">
                         <input
                           type="text"
@@ -338,7 +338,7 @@ export default function SalesPage() {
                           onChange={e => setItem(idx, 'quantity', e.target.value)}
                         />
                       </FormField>
-                      <FormField label="Price (TZS)">
+                      <FormField label="Unit Price (TZS)">
                         <input
                           type="number"
                           min="0"
@@ -348,12 +348,14 @@ export default function SalesPage() {
                           placeholder="0.00"
                         />
                       </FormField>
-                      <div style={{ paddingBottom: '2px' }}>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Total</div>
-                        <div style={{ fontWeight: 700, color: 'var(--color-accent-green)', fontSize: '0.95rem', whiteSpace: 'nowrap', paddingTop: '2px' }}>
-                          {formatCurrency((parseFloat(it.quantity) || 0) * (parseFloat(it.unit_price) || 0))}
-                        </div>
-                      </div>
+                    </div>
+
+                    {/* Row total */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.35rem' }}>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--color-text-secondary)', marginRight: '0.5rem', alignSelf: 'center' }}>Row total:</span>
+                      <span style={{ fontWeight: 700, color: 'var(--color-accent-green)', fontSize: '0.95rem' }}>
+                        {formatCurrency((parseFloat(it.quantity) || 0) * (parseFloat(it.unit_price) || 0))}
+                      </span>
                     </div>
                   </div>
                 );

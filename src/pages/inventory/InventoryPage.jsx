@@ -17,7 +17,7 @@ const TABS = { items: 'items', low: 'low', movements: 'movements' };
 function validate(form) {
   const e = {};
   if (!form.item_name?.trim()) e.item_name = 'Name required';
-  if (!form.category_id) e.category_id = 'Category required';
+  if (!form.category_name?.trim()) e.category_name = 'Category required';
   if (form.unit_cost === '' || isNaN(parseFloat(form.unit_cost))) e.unit_cost = 'Valid cost required';
   return e;
 }
@@ -31,7 +31,6 @@ export default function InventoryPage() {
   const [items, setItems] = useState([]);
   const [lowStock, setLowStock] = useState([]);
   const [movements, setMovements] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -41,15 +40,14 @@ export default function InventoryPage() {
   const [deleteMovTarget, setDeleteMovTarget] = useState(null);
   const [deletingMov, setDeletingMov] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ item_name: '', unit: 'pcs', quantity: '0', unit_cost: '', reorder_level: '0', category_id: '', supplier_id: '' });
+  const [form, setForm] = useState({ item_name: '', category_name: '', unit: 'pcs', quantity: '0', unit_cost: '', reorder_level: '0', supplier_id: '' });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
   const load = useCallback(async () => {
     try {
-      const [itemsRes, catRes] = await Promise.all([api.get('/inventory'), api.get('/inventory/categories')]);
+      const itemsRes = await api.get('/inventory');
       setItems(itemsRes.data.data);
-      setCategories(catRes.data.data);
       const supRes = await api.get('/suppliers').catch(() => ({ data: { data: [] } }));
       setSuppliers(supRes.data.data);
     } catch { addToast({ type: 'error', message: 'Failed to load inventory' }); }
@@ -65,13 +63,13 @@ export default function InventoryPage() {
 
   function openCreate() {
     setEditItem(null);
-    setForm({ item_name: '', unit: 'pcs', quantity: '0', unit_cost: '', reorder_level: '0', category_id: '', supplier_id: '' });
+    setForm({ item_name: '', category_name: '', unit: 'pcs', quantity: '0', unit_cost: '', reorder_level: '0', supplier_id: '' });
     setErrors({}); setTouched({}); setModalOpen(true);
   }
 
   function openEdit(item) {
     setEditItem(item);
-    setForm({ item_name: item.item_name, sku: item.sku, unit: item.unit, quantity: String(item.quantity), unit_cost: String(item.unit_cost), reorder_level: String(item.reorder_level), category_id: item.category_id || '', supplier_id: item.supplier_id || '' });
+    setForm({ item_name: item.item_name, category_name: item.category_name || '', sku: item.sku, unit: item.unit, quantity: String(item.quantity), unit_cost: String(item.unit_cost), reorder_level: String(item.reorder_level), supplier_id: item.supplier_id || '' });
     setErrors({}); setTouched({}); setModalOpen(true);
   }
 
@@ -89,10 +87,10 @@ export default function InventoryPage() {
     try {
       const payload = {
         item_name: form.item_name,
+        category_name: form.category_name.trim(),
         unit: form.unit,
         unit_cost: parseFloat(form.unit_cost),
         reorder_level: parseFloat(form.reorder_level) || 0,
-        category_id: form.category_id || null,
         supplier_id: form.supplier_id || null,
       };
       if (!editItem) payload.quantity = parseFloat(form.quantity) || 0;
@@ -201,11 +199,8 @@ export default function InventoryPage() {
             <FormField label="Item Name" error={touched.item_name && errors.item_name} required htmlFor="inv-name">
               <input id="inv-name" type="text" value={form.item_name} onChange={(e) => setField('item_name', e.target.value)} placeholder="e.g. Acrylic Paint — White" />
             </FormField>
-            <FormField label="Category" error={touched.category_id && errors.category_id} required htmlFor="inv-cat">
-              <select id="inv-cat" value={form.category_id} onChange={(e) => setField('category_id', e.target.value)}>
-                <option value="">Select category…</option>
-                {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+            <FormField label="Category" error={touched.category_name && errors.category_name} required htmlFor="inv-cat">
+              <input id="inv-cat" type="text" value={form.category_name} onChange={(e) => setField('category_name', e.target.value)} placeholder="e.g. Paints, Primers, Tools" />
             </FormField>
           </div>
           <div className="form-row">

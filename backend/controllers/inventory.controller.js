@@ -35,7 +35,26 @@ async function createItem(req, res, next) {
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
-    const { item_name, unit, quantity, unit_cost, reorder_level, category_id, supplier_id } = req.body;
+    const { item_name, category_name, unit, quantity, unit_cost, reorder_level, supplier_id } = req.body;
+
+    // Resolve category: find existing or create new
+    let resolvedCategoryId = null;
+    if (category_name?.trim()) {
+      const trimmed = category_name.trim();
+      const [existing] = await conn.query(
+        'SELECT id FROM categories WHERE organization_id = ? AND name = ? LIMIT 1',
+        [req.orgId, trimmed]
+      );
+      if (existing.length) {
+        resolvedCategoryId = existing[0].id;
+      } else {
+        const [newCat] = await conn.query(
+          'INSERT INTO categories (organization_id, name) VALUES (?, ?)',
+          [req.orgId, trimmed]
+        );
+        resolvedCategoryId = newCat.insertId;
+      }
+    }
 
     // Auto-generate unique SKU within this org
     const sku = await generateReference({
@@ -49,7 +68,7 @@ async function createItem(req, res, next) {
     const [result] = await conn.query(
       `INSERT INTO inventory_items (organization_id, item_name, sku, unit, quantity, unit_cost, reorder_level, category_id, supplier_id)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [req.orgId, item_name, sku, unit || 'pcs', parseFloat(quantity) || 0, parseFloat(unit_cost) || 0, parseFloat(reorder_level) || 0, category_id || null, supplier_id || null]
+      [req.orgId, item_name, sku, unit || 'pcs', parseFloat(quantity) || 0, parseFloat(unit_cost) || 0, parseFloat(reorder_level) || 0, resolvedCategoryId, supplier_id || null]
     );
 
     await conn.commit();
@@ -71,23 +90,56 @@ async function createItem(req, res, next) {
 }
 
 async function updateItem(req, res, next) {
+  const conn = await pool.getConnection();
   try {
     const { id } = req.params;
     const [rows] = await pool.query('SELECT * FROM inventory_items WHERE id = ? AND organization_id = ? LIMIT 1', [id, req.orgId]);
     if (!rows.length) return res.status(404).json({ success: false, error: 'Item not found' });
 
+    const { category_name, ...rest } = req.body;
+
+    // Resolve category_name → category_id if provided
+    if (category_name !== undefined) {
+      const trimmed = category_name?.trim();
+      if (trimmed) {
+        const [existing] = await conn.query(
+          'SELECT id FROM categories WHERE organization_id = ? AND name = ? LIMIT 1',
+          [req.orgId, trimmed]
+        );
+        if (existing.length) {
+          rest.category_id = existing[0].id;
+        } else {
+          const [newCat] = await conn.query(
+            'INSERT INTO categories (organization_id, name) VALUES (?, ?)',
+            [req.orgId, trimmed]
+          );
+          rest.category_id = newCat.insertId;
+        }
+      } else {
+        rest.category_id = null;
+      }
+    }
+
     const fields = ['item_name', 'unit', 'unit_cost', 'reorder_level', 'category_id', 'supplier_id'];
     const updates = {};
-    fields.forEach((f) => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
+    fields.forEach((f) => { if (rest[f] !== undefined) updates[f] = rest[f]; });
 
     if (Object.keys(updates).length) {
       const setClauses = Object.keys(updates).map((k) => `${k} = ?`).join(', ');
-      await pool.query(`UPDATE inventory_items SET ${setClauses}, updated_at = NOW() WHERE id = ?`, [...Object.values(updates), id]);
+      await conn.query(`UPDATE inventory_items SET ${setClauses}, updated_at = NOW() WHERE id = ?`, [...Object.values(updates), id]);
     }
 
-    const [updated] = await pool.query('SELECT * FROM inventory_items WHERE id = ?', [id]);
+    const [updated] = await conn.query(
+      `SELECT i.*, c.name AS category_name, s.name AS supplier_name
+       FROM inventory_items i
+       LEFT JOIN categories c ON c.id = i.category_id
+       LEFT JOIN suppliers s ON s.id = i.supplier_id
+       WHERE i.id = ?`,
+      [id]
+    );
     res.json({ success: true, data: updated[0] });
   } catch (err) { next(err); }
+  finally { conn.release(); }
 }
 
 async function deleteItem(req, res, next) {
