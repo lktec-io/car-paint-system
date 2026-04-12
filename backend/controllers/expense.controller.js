@@ -81,9 +81,28 @@ async function update(req, res, next) {
     const { id } = req.params;
     const [rows] = await pool.query('SELECT * FROM expenses WHERE id = ? AND organization_id = ? LIMIT 1', [id, req.orgId]);
     if (!rows.length) return res.status(404).json({ success: false, error: 'Expense not found' });
-    const { description } = req.body;
-    if (description !== undefined) await pool.query('UPDATE expenses SET description = ? WHERE id = ?', [description, id]);
-    const [updated] = await pool.query('SELECT * FROM expenses WHERE id = ?', [id]);
+
+    const { expense_category_id, amount, expense_date, description, payment_method } = req.body;
+    const updates = {};
+    if (expense_category_id !== undefined) updates.expense_category_id = expense_category_id;
+    if (amount !== undefined) updates.amount = parseFloat(amount);
+    if (expense_date !== undefined) updates.expense_date = expense_date;
+    if (description !== undefined) updates.description = description || null;
+    if (payment_method !== undefined) updates.payment_method = payment_method;
+
+    if (Object.keys(updates).length) {
+      const setClauses = Object.keys(updates).map(k => `${k} = ?`).join(', ');
+      await pool.query(`UPDATE expenses SET ${setClauses} WHERE id = ?`, [...Object.values(updates), id]);
+    }
+
+    const [updated] = await pool.query(
+      `SELECT e.*, ec.name AS category_name, u.full_name AS created_by_name
+       FROM expenses e
+       JOIN expense_categories ec ON ec.id = e.expense_category_id
+       JOIN users u ON u.id = e.created_by
+       WHERE e.id = ?`,
+      [id]
+    );
     res.json({ success: true, data: updated[0] });
   } catch (err) { next(err); }
 }
@@ -91,10 +110,21 @@ async function update(req, res, next) {
 async function remove(req, res, next) {
   try {
     const { id } = req.params;
-    const [rows] = await pool.query('SELECT id FROM expenses WHERE id = ? AND organization_id = ?', [id, req.orgId]);
+    const [rows] = await pool.query('SELECT id, journal_entry_id FROM expenses WHERE id = ? AND organization_id = ?', [id, req.orgId]);
     if (!rows.length) return res.status(404).json({ success: false, error: 'Expense not found' });
+
+    const { journal_entry_id } = rows[0];
+
+    // Delete expense first (clears journal_entry_id FK reference)
     await pool.query('DELETE FROM expenses WHERE id = ?', [id]);
-    res.json({ success: true, data: { message: 'Deleted' } });
+
+    // Delete associated journal entry if it exists
+    if (journal_entry_id) {
+      await pool.query('DELETE FROM journal_entry_lines WHERE journal_entry_id = ?', [journal_entry_id]);
+      await pool.query('DELETE FROM journal_entries WHERE id = ?', [journal_entry_id]);
+    }
+
+    res.json({ success: true, data: { message: 'Expense deleted' } });
   } catch (err) { next(err); }
 }
 

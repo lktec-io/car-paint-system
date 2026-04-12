@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { MdAdd, MdEdit } from 'react-icons/md';
+import { MdAdd, MdEdit, MdDelete } from 'react-icons/md';
 import api from '../../api/axios';
 import useUiStore from '../../stores/uiStore';
 import DataTable from '../../components/common/DataTable';
 import Modal from '../../components/common/Modal';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 import FormField from '../../components/common/FormField';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
@@ -33,6 +34,8 @@ export default function ExpensesPage() {
   const [loading, setLoading]       = useState(true);
   const [open, setOpen]             = useState(false);
   const [editExpense, setEditExpense] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting]     = useState(false);
   const [catOpen, setCatOpen]       = useState(false);
   const [saving, setSaving]         = useState(false);
   const [catName, setCatName]       = useState('');
@@ -80,6 +83,17 @@ export default function ExpensesPage() {
     finally { setSaving(false); }
   }
 
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      await api.delete(`/expenses/${deleteTarget.id}`);
+      addToast({ type: 'success', message: 'Expense deleted' });
+      setDeleteTarget(null);
+      load();
+    } catch (err) { addToast({ type: 'error', message: err.response?.data?.error || 'Delete failed' }); }
+    finally { setDeleting(false); }
+  }
+
   async function saveCategory() {
     if (!catName.trim()) return;
     setSaving(true);
@@ -107,7 +121,10 @@ export default function ExpensesPage() {
 
       <DataTable columns={COLS} data={rows} loading={loading} searchable searchPlaceholder="Search expenses…"
         actions={r => (
-          <button className="btn-icon" title="Edit" onClick={() => openEdit(r)}><MdEdit /></button>
+          <>
+            <button className="btn-icon" title="Edit" onClick={() => openEdit(r)}><MdEdit /></button>
+            <button className="btn-icon" title="Delete" style={{ color: 'var(--color-accent-red)' }} onClick={() => setDeleteTarget(r)}><MdDelete /></button>
+          </>
         )}
       />
 
@@ -146,6 +163,16 @@ export default function ExpensesPage() {
           </FormField>
         </div>
       </Modal>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        loading={deleting}
+        title="Delete Expense"
+        message={`Delete this expense of ${deleteTarget ? formatCurrency(deleteTarget.amount) : ''}? This cannot be undone.`}
+        variant="danger"
+      />
 
       <Modal open={catOpen} onClose={() => setCatOpen(false)} title="New Expense Category" size="sm"
         footer={<>
