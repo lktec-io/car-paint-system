@@ -28,7 +28,6 @@ async function createUser(req, res, next) {
   try {
     const { full_name, email, password, role, profile_image } = req.body;
 
-    // Prevent duplicate email within the org (email is globally unique by DB constraint)
     const [existing] = await pool.query('SELECT id FROM users WHERE email = ?', [email]);
     if (existing.length) {
       return res.status(409).json({ success: false, error: 'Email already in use' });
@@ -40,9 +39,6 @@ async function createUser(req, res, next) {
        VALUES (?, ?, ?, ?, ?, ?, TRUE)`,
       [req.orgId, full_name, email, profile_image || null, hash, role]
     );
-
-    req.auditEntityId = result.insertId;
-    req.auditNew = { full_name, email, role };
 
     const [created] = await pool.query(
       'SELECT id, full_name, email, profile_image, role, is_active, created_at FROM users WHERE id = ?',
@@ -69,8 +65,6 @@ async function updateUser(req, res, next) {
       return res.status(400).json({ success: false, error: 'Cannot deactivate your own account' });
     }
 
-    req.auditOld = { full_name: rows[0].full_name, email: rows[0].email, role: rows[0].role, is_active: rows[0].is_active };
-
     const updates = {};
     if (full_name !== undefined) updates.full_name = full_name;
     if (email !== undefined) updates.email = email;
@@ -88,8 +82,6 @@ async function updateUser(req, res, next) {
       `UPDATE users SET ${setClauses}, updated_at = NOW() WHERE id = ? AND organization_id = ?`,
       [...Object.values(updates), id, req.orgId]
     );
-
-    req.auditNew = updates;
 
     const [updated] = await pool.query(
       'SELECT id, full_name, email, profile_image, role, is_active, last_login, created_at FROM users WHERE id = ?',
@@ -117,8 +109,8 @@ async function deleteUser(req, res, next) {
       return res.status(403).json({ success: false, error: 'Cannot delete super admin accounts' });
     }
 
+    await pool.query('DELETE FROM audit_logs WHERE user_id = ?', [id]);
     await pool.query('DELETE FROM users WHERE id = ? AND organization_id = ?', [id, req.orgId]);
-    req.auditEntityId = id;
 
     res.json({ success: true, data: { message: 'User deleted successfully' } });
   } catch (err) { next(err); }

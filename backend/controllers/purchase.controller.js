@@ -103,7 +103,6 @@ async function create(req, res, next) {
     }
 
     await conn.commit();
-    req.auditEntityId = purchId;
 
     const [created] = await pool.query('SELECT * FROM purchases WHERE id = ?', [purchId]);
     res.status(201).json({ success: true, data: created[0] });
@@ -120,7 +119,6 @@ async function update(req, res, next) {
     const { id } = req.params;
     const [rows] = await pool.query('SELECT * FROM purchases WHERE id = ? AND organization_id = ? LIMIT 1', [id, req.orgId]);
     if (!rows.length) return res.status(404).json({ success: false, error: 'Purchase not found' });
-    req.auditOld = rows[0];
 
     const { amount_paid, notes, status } = req.body;
     const updates = {};
@@ -144,7 +142,6 @@ async function update(req, res, next) {
       await pool.query(`UPDATE purchases SET ${s} WHERE id = ?`, [...Object.values(updates), id]);
     }
     const [updated] = await pool.query('SELECT * FROM purchases WHERE id = ?', [id]);
-    req.auditNew = updates;
     res.json({ success: true, data: updated[0] });
   } catch (err) { next(err); }
 }

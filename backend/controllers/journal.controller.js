@@ -63,7 +63,6 @@ async function createEntry(req, res, next) {
     });
 
     await conn.commit();
-    req.auditEntityId = entryId;
 
     const [entry] = await pool.query('SELECT * FROM journal_entries WHERE id = ?', [entryId]);
     res.status(201).json({ success: true, data: entry[0] });

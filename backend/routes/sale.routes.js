@@ -4,7 +4,6 @@ const authenticate = require('../middleware/authenticate');
 const authorize = require('../middleware/authorize');
 const tenantIsolation = require('../middleware/tenantIsolation');
 const validate = require('../middleware/validate');
-const auditLog = require('../middleware/auditLog');
 const ctrl = require('../controllers/sale.controller');
 
 const router = express.Router();
@@ -17,7 +16,6 @@ router.get('/:id', authorize(ROLES), param('id').isInt(), validate, ctrl.get);
 router.post(
   '/',
   authorize(ROLES),
-  auditLog('CREATE', 'invoices'),
   [body('sale_date').isDate(), body('items').isArray({ min: 1 })],
   validate,
   ctrl.create
@@ -26,7 +24,6 @@ router.post(
 router.delete(
   '/:id',
   authorize(['super_admin', 'store_manager']),
-  auditLog('DELETE', 'invoices'),
   param('id').isInt(),
   validate,
   ctrl.deleteSale

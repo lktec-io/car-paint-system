@@ -40,7 +40,6 @@ async function createAccount(req, res, next) {
       [req.orgId, account_code, account_name, account_type, parent_id || null]
     );
 
-    req.auditEntityId = result.insertId;
     const [created] = await pool.query('SELECT * FROM accounts WHERE id = ?', [result.insertId]);
     res.status(201).json({ success: true, data: created[0] });
   } catch (err) { next(err); }
@@ -56,7 +55,6 @@ async function updateAccount(req, res, next) {
       [id, req.orgId]
     );
     if (!rows.length) return res.status(404).json({ success: false, error: 'Account not found' });
-    req.auditOld = rows[0];
 
     const updates = {};
     if (account_name !== undefined) updates.account_name = account_name;
@@ -71,7 +69,6 @@ async function updateAccount(req, res, next) {
     }
 
     const [updated] = await pool.query('SELECT * FROM accounts WHERE id = ?', [id]);
-    req.auditNew = updates;
     res.json({ success: true, data: updated[0] });
   } catch (err) { next(err); }
 }

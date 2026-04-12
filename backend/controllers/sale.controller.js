@@ -187,7 +187,6 @@ async function create(req, res, next) {
     }
 
     await conn.commit();
-    req.auditEntityId = saleId;
 
     res.status(201).json({ success: true, data: { id: saleId, sale_number: saleNum, total_amount: total } });
   } catch (err) {

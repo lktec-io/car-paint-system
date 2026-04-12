@@ -46,7 +46,6 @@ async function createItem(req, res, next) {
       [req.orgId, item_name, sku, unit || 'pcs', parseFloat(quantity) || 0, parseFloat(unit_cost) || 0, parseFloat(reorder_level) || 0, category_id || null, supplier_id || null]
     );
 
-    req.auditEntityId = result.insertId;
     const [created] = await pool.query('SELECT * FROM inventory_items WHERE id = ?', [result.insertId]);
     res.status(201).json({ success: true, data: created[0] });
   } catch (err) { next(err); }
@@ -57,7 +56,6 @@ async function updateItem(req, res, next) {
     const { id } = req.params;
     const [rows] = await pool.query('SELECT * FROM inventory_items WHERE id = ? AND organization_id = ? LIMIT 1', [id, req.orgId]);
     if (!rows.length) return res.status(404).json({ success: false, error: 'Item not found' });
-    req.auditOld = rows[0];
 
     const fields = ['item_name', 'unit', 'unit_cost', 'reorder_level', 'category_id', 'supplier_id'];
     const updates = {};
@@ -68,7 +66,6 @@ async function updateItem(req, res, next) {
       await pool.query(`UPDATE inventory_items SET ${setClauses}, updated_at = NOW() WHERE id = ?`, [...Object.values(updates), id]);
     }
 
-    req.auditNew = updates;
     const [updated] = await pool.query('SELECT * FROM inventory_items WHERE id = ?', [id]);
     res.json({ success: true, data: updated[0] });
   } catch (err) { next(err); }
@@ -81,7 +78,6 @@ async function deleteItem(req, res, next) {
     if (!rows.length) return res.status(404).json({ success: false, error: 'Item not found' });
     await pool.query('DELETE FROM job_materials WHERE inventory_item_id = ?', [id]);
     await pool.query('DELETE FROM inventory_items WHERE id = ?', [id]);
-    req.auditEntityId = id;
     res.json({ success: true, data: { message: 'Item deleted' } });
   } catch (err) { next(err); }
 }

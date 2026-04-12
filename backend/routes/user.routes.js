@@ -4,12 +4,10 @@ const authenticate = require('../middleware/authenticate');
 const authorize = require('../middleware/authorize');
 const tenantIsolation = require('../middleware/tenantIsolation');
 const validate = require('../middleware/validate');
-const auditLog = require('../middleware/auditLog');
 const ctrl = require('../controllers/user.controller');
 
 const router = express.Router();
 
-// All user routes require authentication + tenant context
 router.use(authenticate, tenantIsolation);
 
 router.get('/', authorize(['super_admin']), ctrl.listUsers);
@@ -17,7 +15,6 @@ router.get('/', authorize(['super_admin']), ctrl.listUsers);
 router.post(
   '/',
   authorize(['super_admin']),
-  auditLog('CREATE', 'users'),
   [
     body('full_name').trim().notEmpty().withMessage('Full name is required'),
     body('email').isEmail().withMessage('Valid email required').normalizeEmail(),
@@ -34,7 +31,6 @@ router.get('/:id', authorize(['super_admin']), param('id').isInt(), validate, ct
 router.put(
   '/:id',
   authorize(['super_admin']),
-  auditLog('UPDATE', 'users'),
   [
     param('id').isInt(),
     body('full_name').optional().trim().notEmpty(),
@@ -47,6 +43,6 @@ router.put(
   ctrl.updateUser
 );
 
-router.delete('/:id', authorize(['super_admin']), auditLog('DELETE', 'users'), param('id').isInt(), validate, ctrl.deleteUser);
+router.delete('/:id', authorize(['super_admin']), param('id').isInt(), validate, ctrl.deleteUser);
 
 module.exports = router;

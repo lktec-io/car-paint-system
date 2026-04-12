@@ -66,7 +66,6 @@ async function create(req, res, next) {
     }
 
     await conn.commit();
-    req.auditEntityId = expId;
     const [created] = await pool.query('SELECT * FROM expenses WHERE id = ?', [expId]);
     res.status(201).json({ success: true, data: created[0] });
   } catch (err) {
@@ -95,7 +94,6 @@ async function remove(req, res, next) {
     const [rows] = await pool.query('SELECT id FROM expenses WHERE id = ? AND organization_id = ?', [id, req.orgId]);
     if (!rows.length) return res.status(404).json({ success: false, error: 'Expense not found' });
     await pool.query('DELETE FROM expenses WHERE id = ?', [id]);
-    req.auditEntityId = id;
     res.json({ success: true, data: { message: 'Deleted' } });
   } catch (err) { next(err); }
 }
