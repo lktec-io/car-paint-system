@@ -68,12 +68,13 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* ── Form inputs — universal styling ───────────────────────── */
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="hidden"]),
 select,
 textarea {
   font-family: var(--font-body);
   font-size: 0.9rem;
-  background: var(--color-bg-primary);
+  background: var(--color-bg-tertiary);
   color: var(--color-text-primary);
   border: 1.5px solid var(--color-border);
   border-radius: 10px;
@@ -81,35 +82,53 @@ textarea {
   outline: none;
   width: 100%;
   box-sizing: border-box;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  appearance: none;
-  -webkit-appearance: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  min-height: 42px;
 }
 
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="hidden"]):focus,
 select:focus,
 textarea:focus {
   border-color: var(--color-accent-green);
-  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.12), 0 2px 8px rgba(46, 204, 113, 0.08);
+  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.15);
+  background: var(--color-bg-secondary);
+  outline: none;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="hidden"]):disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
   background: var(--color-bg-secondary);
 }
 
-/* Restore select arrow since appearance: none removes it */
+/* Select — custom arrow */
 select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238899AA' d='M0 0l6 8 6-8z'/%3E%3C/svg%3E");
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%238899AA' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 36px;
-}
-
-input::placeholder, textarea::placeholder {
-  color: var(--color-text-secondary);
-  opacity: 0.6;
-  font-weight: 400;
+  background-position: right 14px center;
+  padding-right: 38px;
+  cursor: pointer;
 }
 
 select option {
   background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+/* Textarea */
+textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.7;
 }
 
 table {
