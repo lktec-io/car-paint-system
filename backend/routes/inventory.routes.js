@@ -18,8 +18,9 @@ router.get('/movements',  authorize(ALL),    ctrl.stockMovements);
 router.get('/categories', authorize(ALL),    ctrl.listCategories);
 router.get('/:id',        authorize(ALL),    param('id').isInt(), validate, ctrl.getItem);
 
+// POST — only require item_name; all other fields are optional or have defaults
 router.post('/', authorize(MANAGE),
-  [body('item_name').trim().notEmpty(), body('unit_cost').isFloat({ min: 0 })],
+  [body('item_name').trim().notEmpty().withMessage('item_name is required')],
   validate, ctrl.createItem);
 
 router.put('/:id', authorize(MANAGE), param('id').isInt(), validate, ctrl.updateItem);

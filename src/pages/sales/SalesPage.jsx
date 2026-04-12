@@ -17,7 +17,7 @@ const PAYMENT_METHODS = [
   { value: 'credit', label: 'Credit' },
 ];
 
-const blankItem = () => ({ inventory_item_id: '', category_id: '', description: '', quantity: '1', unit_price: '' });
+const blankItem = () => ({ inventory_item_id: '', category: '', description: '', quantity: '1', unit_price: '' });
 
 function blankForm() {
   return {
@@ -45,7 +45,6 @@ export default function SalesPage() {
 
   const [rows, setRows]             = useState([]);
   const [inventory, setInventory]   = useState([]);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading]       = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [viewSale, setViewSale]     = useState(null);
@@ -58,20 +57,21 @@ export default function SalesPage() {
 
   const load = useCallback(async () => {
     try {
-      const [sales, inv, cats] = await Promise.all([
+      const [sales, inv] = await Promise.all([
         api.get('/sales'),
         api.get('/inventory'),
-        api.get('/inventory/categories'),
       ]);
       setRows(sales.data?.data || []);
       setInventory(inv.data?.data || []);
-      setCategories(cats.data?.data || []);
     } catch {
       addToast({ type: 'error', message: 'Failed to load sales data' });
     } finally {
       setLoading(false);
     }
   }, [addToast]);
+
+  // Derive unique categories from inventory items
+  const categories = [...new Set(inventory.map(i => i.category).filter(Boolean))].sort();
 
   useEffect(() => { load(); }, [load]);
 
@@ -103,7 +103,7 @@ export default function SalesPage() {
         if (i !== idx) return it;
         const updated = { ...it, [k]: v };
         // When category changes, reset the product selection
-        if (k === 'category_id') {
+        if (k === 'category') {
           updated.inventory_item_id = '';
           updated.description = '';
           updated.unit_price = '';
@@ -268,8 +268,8 @@ export default function SalesPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {(form.items || []).map((it, idx) => {
-                const filteredInv = it.category_id
-                  ? inventory.filter(i => parseFloat(i.quantity) > 0 && String(i.category_id) === String(it.category_id))
+                const filteredInv = it.category
+                  ? inventory.filter(i => parseFloat(i.quantity) > 0 && i.category === it.category)
                   : inventory.filter(i => parseFloat(i.quantity) > 0);
 
                 return (
@@ -295,12 +295,12 @@ export default function SalesPage() {
                     <div className="form-row" style={{ marginBottom: '0.65rem' }}>
                       <FormField label="Category">
                         <select
-                          value={it.category_id}
-                          onChange={e => setItem(idx, 'category_id', e.target.value)}
+                          value={it.category}
+                          onChange={e => setItem(idx, 'category', e.target.value)}
                         >
                           <option value="">All categories</option>
                           {categories.map(c => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
+                            <option key={c} value={c}>{c}</option>
                           ))}
                         </select>
                       </FormField>

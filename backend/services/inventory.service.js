@@ -63,7 +63,7 @@ async function addStock({ conn, itemId, quantity, referenceType, referenceId, us
  */
 async function getLowStockItems(orgId) {
   const [rows] = await pool.query(
-    `SELECT i.*, c.name AS category_name, s.name AS supplier_name
+    `SELECT i.*, c.name AS category, s.name AS supplier_name
      FROM inventory_items i
      LEFT JOIN categories c ON c.id = i.category_id
      LEFT JOIN suppliers s ON s.id = i.supplier_id
