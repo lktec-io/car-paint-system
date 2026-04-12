@@ -1,5 +1,6 @@
 const pool = require('../config/db');
 const { getLowStockItems, addStock } = require('../services/inventory.service');
+const { generateReference } = require('../utils/autoReference');
 
 async function listItems(req, res, next) {
   try {
@@ -31,24 +32,42 @@ async function getItem(req, res, next) {
 }
 
 async function createItem(req, res, next) {
+  const conn = await pool.getConnection();
   try {
-    const { item_name, sku, unit, quantity, unit_cost, reorder_level, category_id, supplier_id } = req.body;
+    await conn.beginTransaction();
+    const { item_name, unit, quantity, unit_cost, reorder_level, category_id, supplier_id } = req.body;
 
-    const [dup] = await pool.query(
-      'SELECT id FROM inventory_items WHERE organization_id = ? AND sku = ?',
-      [req.orgId, sku]
-    );
-    if (dup.length) return res.status(409).json({ success: false, error: 'SKU already exists' });
+    // Auto-generate unique SKU within this org
+    const sku = await generateReference({
+      prefix: 'SKU',
+      table: 'inventory_items',
+      column: 'sku',
+      orgId: req.orgId,
+      conn,
+    });
 
-    const [result] = await pool.query(
+    const [result] = await conn.query(
       `INSERT INTO inventory_items (organization_id, item_name, sku, unit, quantity, unit_cost, reorder_level, category_id, supplier_id)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [req.orgId, item_name, sku, unit || 'pcs', parseFloat(quantity) || 0, parseFloat(unit_cost) || 0, parseFloat(reorder_level) || 0, category_id || null, supplier_id || null]
     );
 
-    const [created] = await pool.query('SELECT * FROM inventory_items WHERE id = ?', [result.insertId]);
+    await conn.commit();
+    const [created] = await pool.query(
+      `SELECT i.*, c.name AS category_name, s.name AS supplier_name
+       FROM inventory_items i
+       LEFT JOIN categories c ON c.id = i.category_id
+       LEFT JOIN suppliers s ON s.id = i.supplier_id
+       WHERE i.id = ?`,
+      [result.insertId]
+    );
     res.status(201).json({ success: true, data: created[0] });
-  } catch (err) { next(err); }
+  } catch (err) {
+    await conn.rollback();
+    next(err);
+  } finally {
+    conn.release();
+  }
 }
 
 async function updateItem(req, res, next) {

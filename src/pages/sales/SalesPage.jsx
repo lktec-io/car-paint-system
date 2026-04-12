@@ -17,7 +17,7 @@ const PAYMENT_METHODS = [
   { value: 'credit', label: 'Credit' },
 ];
 
-const blankItem = () => ({ inventory_item_id: '', description: '', quantity: '1', unit_price: '' });
+const blankItem = () => ({ inventory_item_id: '', category_id: '', description: '', quantity: '1', unit_price: '' });
 
 function blankForm() {
   return {
@@ -45,6 +45,7 @@ export default function SalesPage() {
 
   const [rows, setRows]             = useState([]);
   const [inventory, setInventory]   = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading]       = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [viewSale, setViewSale]     = useState(null);
@@ -57,12 +58,14 @@ export default function SalesPage() {
 
   const load = useCallback(async () => {
     try {
-      const [sales, inv] = await Promise.all([
+      const [sales, inv, cats] = await Promise.all([
         api.get('/sales'),
         api.get('/inventory'),
+        api.get('/inventory/categories'),
       ]);
       setRows(sales.data?.data || []);
       setInventory(inv.data?.data || []);
+      setCategories(cats.data?.data || []);
     } catch {
       addToast({ type: 'error', message: 'Failed to load sales data' });
     } finally {
@@ -99,6 +102,12 @@ export default function SalesPage() {
       const items = f.items.map((it, i) => {
         if (i !== idx) return it;
         const updated = { ...it, [k]: v };
+        // When category changes, reset the product selection
+        if (k === 'category_id') {
+          updated.inventory_item_id = '';
+          updated.description = '';
+          updated.unit_price = '';
+        }
         // Auto-fill description and price from inventory when item is selected
         if (k === 'inventory_item_id' && v) {
           const invItem = inventory.find(inv => String(inv.id) === String(v));
@@ -246,69 +255,90 @@ export default function SalesPage() {
             </FormField>
           </div>
 
-          {/* Items table */}
+          {/* Items */}
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
               <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 Items Sold
               </span>
-              <button className="btn btn-secondary" style={{ padding: '0.25rem 0.65rem', fontSize: '0.8rem' }} onClick={addItem} type="button">
+              <button className="btn btn-secondary" style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }} onClick={addItem} type="button">
                 <MdAdd /> Add Row
               </button>
             </div>
 
-            <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.83rem' }}>
-                <thead style={{ background: 'var(--color-bg-tertiary)' }}>
-                  <tr>
-                    {['Item (Inventory)', 'Description', 'Qty', 'Price (TZS)', 'Line Total', ''].map(h => (
-                      <th key={h} style={{ padding: '0.55rem 0.6rem', textAlign: 'left', fontWeight: 600, color: 'var(--color-text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {(form.items || []).map((it, idx) => (
-                    <tr key={idx} style={{ borderTop: '1px solid var(--color-border)' }}>
-                      {/* Inventory select */}
-                      <td style={{ padding: '0.4rem 0.5rem', minWidth: 150 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {(form.items || []).map((it, idx) => {
+                const filteredInv = it.category_id
+                  ? inventory.filter(i => parseFloat(i.quantity) > 0 && String(i.category_id) === String(it.category_id))
+                  : inventory.filter(i => parseFloat(i.quantity) > 0);
+
+                return (
+                  <div key={idx} style={{
+                    background: 'var(--color-bg-tertiary)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius)',
+                    padding: '0.9rem',
+                  }}>
+                    {/* Row header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+                        Item {idx + 1}
+                      </span>
+                      {form.items.length > 1 && (
+                        <button className="btn-icon" type="button" style={{ color: 'var(--color-accent-red)' }} onClick={() => removeItem(idx)}>
+                          <MdDelete />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Step 1: Category + Product */}
+                    <div className="form-row" style={{ marginBottom: '0.65rem' }}>
+                      <FormField label="Category">
+                        <select
+                          value={it.category_id}
+                          onChange={e => setItem(idx, 'category_id', e.target.value)}
+                        >
+                          <option value="">All categories</option>
+                          {categories.map(c => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                          ))}
+                        </select>
+                      </FormField>
+                      <FormField label="Product (Inventory)">
                         <select
                           value={it.inventory_item_id}
                           onChange={e => setItem(idx, 'inventory_item_id', e.target.value)}
-                          style={{ width: '100%', minWidth: 140 }}
                         >
                           <option value="">— manual entry —</option>
-                          {inventory
-                            .filter(i => parseFloat(i.quantity) > 0)
-                            .map(i => (
-                              <option key={i.id} value={i.id}>
-                                {i.item_name} ({parseFloat(i.quantity)} {i.unit} avail.)
-                              </option>
-                            ))
-                          }
+                          {filteredInv.map(i => (
+                            <option key={i.id} value={i.id}>
+                              {i.item_name} ({parseFloat(i.quantity)} {i.unit} avail.)
+                            </option>
+                          ))}
                         </select>
-                      </td>
-                      {/* Description */}
-                      <td style={{ padding: '0.4rem 0.5rem', minWidth: 130 }}>
+                      </FormField>
+                    </div>
+
+                    {/* Step 2: Description + Qty + Price + Total */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 80px 110px auto', gap: '0.65rem', alignItems: 'end' }}>
+                      <FormField label="Description">
                         <input
+                          type="text"
                           value={it.description}
                           onChange={e => setItem(idx, 'description', e.target.value)}
-                          placeholder="Description"
-                          style={{ width: '100%', minWidth: 120 }}
+                          placeholder="Item description"
                         />
-                      </td>
-                      {/* Qty */}
-                      <td style={{ padding: '0.4rem 0.5rem', width: 70 }}>
+                      </FormField>
+                      <FormField label="Qty">
                         <input
                           type="number"
                           min="0.01"
                           step="0.01"
                           value={it.quantity}
                           onChange={e => setItem(idx, 'quantity', e.target.value)}
-                          style={{ width: 65 }}
                         />
-                      </td>
-                      {/* Price */}
-                      <td style={{ padding: '0.4rem 0.5rem', width: 110 }}>
+                      </FormField>
+                      <FormField label="Price (TZS)">
                         <input
                           type="number"
                           min="0"
@@ -316,25 +346,18 @@ export default function SalesPage() {
                           value={it.unit_price}
                           onChange={e => setItem(idx, 'unit_price', e.target.value)}
                           placeholder="0.00"
-                          style={{ width: 100 }}
                         />
-                      </td>
-                      {/* Line total */}
-                      <td style={{ padding: '0.4rem 0.6rem', fontWeight: 600, color: 'var(--color-accent-green)', whiteSpace: 'nowrap' }}>
-                        {formatCurrency((parseFloat(it.quantity) || 0) * (parseFloat(it.unit_price) || 0))}
-                      </td>
-                      {/* Remove */}
-                      <td style={{ padding: '0.4rem 0.4rem', width: 36 }}>
-                        {form.items.length > 1 && (
-                          <button className="btn-icon" type="button" style={{ color: 'var(--color-accent-red)' }} onClick={() => removeItem(idx)}>
-                            <MdDelete />
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </FormField>
+                      <div style={{ paddingBottom: '2px' }}>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Total</div>
+                        <div style={{ fontWeight: 700, color: 'var(--color-accent-green)', fontSize: '0.95rem', whiteSpace: 'nowrap', paddingTop: '2px' }}>
+                          {formatCurrency((parseFloat(it.quantity) || 0) * (parseFloat(it.unit_price) || 0))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 

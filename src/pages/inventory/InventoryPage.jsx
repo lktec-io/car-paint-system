@@ -17,7 +17,7 @@ const TABS = { items: 'items', low: 'low', movements: 'movements' };
 function validate(form) {
   const e = {};
   if (!form.item_name?.trim()) e.item_name = 'Name required';
-  if (!form.sku?.trim()) e.sku = 'SKU required';
+  if (!form.category_id) e.category_id = 'Category required';
   if (form.unit_cost === '' || isNaN(parseFloat(form.unit_cost))) e.unit_cost = 'Valid cost required';
   return e;
 }
@@ -41,7 +41,7 @@ export default function InventoryPage() {
   const [deleteMovTarget, setDeleteMovTarget] = useState(null);
   const [deletingMov, setDeletingMov] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ item_name: '', sku: '', unit: 'pcs', quantity: '0', unit_cost: '', reorder_level: '0', category_id: '', supplier_id: '' });
+  const [form, setForm] = useState({ item_name: '', unit: 'pcs', quantity: '0', unit_cost: '', reorder_level: '0', category_id: '', supplier_id: '' });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
@@ -65,7 +65,7 @@ export default function InventoryPage() {
 
   function openCreate() {
     setEditItem(null);
-    setForm({ item_name: '', sku: '', unit: 'pcs', quantity: '0', unit_cost: '', reorder_level: '0', category_id: '', supplier_id: '' });
+    setForm({ item_name: '', unit: 'pcs', quantity: '0', unit_cost: '', reorder_level: '0', category_id: '', supplier_id: '' });
     setErrors({}); setTouched({}); setModalOpen(true);
   }
 
@@ -74,6 +74,7 @@ export default function InventoryPage() {
     setForm({ item_name: item.item_name, sku: item.sku, unit: item.unit, quantity: String(item.quantity), unit_cost: String(item.unit_cost), reorder_level: String(item.reorder_level), category_id: item.category_id || '', supplier_id: item.supplier_id || '' });
     setErrors({}); setTouched({}); setModalOpen(true);
   }
+
 
   function setField(k, v) {
     const next = { ...form, [k]: v };
@@ -86,7 +87,14 @@ export default function InventoryPage() {
     if (Object.keys(errs).length) return;
     setSaving(true);
     try {
-      const payload = { ...form, unit_cost: parseFloat(form.unit_cost), reorder_level: parseFloat(form.reorder_level) || 0, category_id: form.category_id || null, supplier_id: form.supplier_id || null };
+      const payload = {
+        item_name: form.item_name,
+        unit: form.unit,
+        unit_cost: parseFloat(form.unit_cost),
+        reorder_level: parseFloat(form.reorder_level) || 0,
+        category_id: form.category_id || null,
+        supplier_id: form.supplier_id || null,
+      };
       if (!editItem) payload.quantity = parseFloat(form.quantity) || 0;
       if (editItem) {
         await api.put(`/inventory/${editItem.id}`, payload);
@@ -190,30 +198,46 @@ export default function InventoryPage() {
       >
         <div className="user-form">
           <div className="form-row">
-            <FormField label="Item Name" error={touched.item_name && errors.item_name} required htmlFor="inv-name"><input id="inv-name" value={form.item_name} onChange={(e) => setField('item_name', e.target.value)} placeholder="Acrylic Paint — White" /></FormField>
-            <FormField label="SKU" error={touched.sku && errors.sku} required htmlFor="inv-sku"><input id="inv-sku" value={form.sku} onChange={(e) => setField('sku', e.target.value)} placeholder="PAINT-001" disabled={Boolean(editItem)} /></FormField>
-          </div>
-          <div className="form-row">
-            <FormField label="Unit Cost (TZS)" error={touched.unit_cost && errors.unit_cost} required htmlFor="inv-cost"><input id="inv-cost" type="number" min="0" step="0.01" value={form.unit_cost} onChange={(e) => setField('unit_cost', e.target.value)} placeholder="0.00" /></FormField>
-            <FormField label="Unit" htmlFor="inv-unit"><input id="inv-unit" value={form.unit} onChange={(e) => setField('unit', e.target.value)} placeholder="pcs, litre, kg" /></FormField>
-          </div>
-          <div className="form-row">
-            {!editItem && <FormField label="Opening Qty" htmlFor="inv-qty"><input id="inv-qty" type="number" min="0" step="0.01" value={form.quantity} onChange={(e) => setField('quantity', e.target.value)} /></FormField>}
-            <FormField label="Reorder Level" htmlFor="inv-reorder"><input id="inv-reorder" type="number" min="0" step="0.01" value={form.reorder_level} onChange={(e) => setField('reorder_level', e.target.value)} /></FormField>
-          </div>
-          <div className="form-row">
-            <FormField label="Category" htmlFor="inv-cat">
+            <FormField label="Item Name" error={touched.item_name && errors.item_name} required htmlFor="inv-name">
+              <input id="inv-name" type="text" value={form.item_name} onChange={(e) => setField('item_name', e.target.value)} placeholder="e.g. Acrylic Paint — White" />
+            </FormField>
+            <FormField label="Category" error={touched.category_id && errors.category_id} required htmlFor="inv-cat">
               <select id="inv-cat" value={form.category_id} onChange={(e) => setField('category_id', e.target.value)}>
-                <option value="">— None —</option>
+                <option value="">Select category…</option>
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </FormField>
+          </div>
+          <div className="form-row">
+            <FormField label="Unit Cost (TZS)" error={touched.unit_cost && errors.unit_cost} required htmlFor="inv-cost">
+              <input id="inv-cost" type="number" min="0" step="0.01" value={form.unit_cost} onChange={(e) => setField('unit_cost', e.target.value)} placeholder="0.00" />
+            </FormField>
+            <FormField label="Unit" htmlFor="inv-unit">
+              <input id="inv-unit" type="text" value={form.unit} onChange={(e) => setField('unit', e.target.value)} placeholder="pcs, litre, kg" />
+            </FormField>
+          </div>
+          <div className="form-row">
+            {!editItem && (
+              <FormField label="Opening Qty" htmlFor="inv-qty">
+                <input id="inv-qty" type="number" min="0" step="0.01" value={form.quantity} onChange={(e) => setField('quantity', e.target.value)} />
+              </FormField>
+            )}
+            <FormField label="Reorder Level" htmlFor="inv-reorder">
+              <input id="inv-reorder" type="number" min="0" step="0.01" value={form.reorder_level} onChange={(e) => setField('reorder_level', e.target.value)} />
+            </FormField>
+          </div>
+          <div className="form-row">
             <FormField label="Supplier" htmlFor="inv-sup">
               <select id="inv-sup" value={form.supplier_id} onChange={(e) => setField('supplier_id', e.target.value)}>
                 <option value="">— None —</option>
                 {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
             </FormField>
+            {editItem && (
+              <FormField label="SKU (auto-generated)" htmlFor="inv-sku">
+                <input id="inv-sku" type="text" value={form.sku || ''} disabled style={{ opacity: 0.6, cursor: 'not-allowed' }} />
+              </FormField>
+            )}
           </div>
         </div>
       </Modal>

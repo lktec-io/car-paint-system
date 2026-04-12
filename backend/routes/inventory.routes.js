@@ -19,7 +19,7 @@ router.get('/categories', authorize(ALL),    ctrl.listCategories);
 router.get('/:id',        authorize(ALL),    param('id').isInt(), validate, ctrl.getItem);
 
 router.post('/', authorize(MANAGE),
-  [body('item_name').trim().notEmpty(), body('sku').trim().notEmpty(), body('unit_cost').isFloat({ min: 0 })],
+  [body('item_name').trim().notEmpty(), body('unit_cost').isFloat({ min: 0 })],
   validate, ctrl.createItem);
 
 router.put('/:id', authorize(MANAGE), param('id').isInt(), validate, ctrl.updateItem);
