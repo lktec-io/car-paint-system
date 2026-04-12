@@ -21,19 +21,19 @@ const blankItem = () => ({ inventory_item_id: '', description: '', quantity: '1'
 
 function blankForm() {
   return {
-    sale_date: new Date().toISOString().split('T')[0],
+    sale_date:      new Date().toISOString().split('T')[0],
     payment_method: 'cash',
-    notes: '',
-    items: [blankItem()],
+    notes:          '',
+    items:          [blankItem()],
   };
 }
 
 const COLS = [
-  { key: 'sale_number',     label: 'Sale #',   render: v => <code style={{ fontSize: '0.8rem', color: 'var(--color-accent-blue)' }}>{v}</code> },
-  { key: 'sale_date',       label: 'Date',      render: v => formatDate(v) },
-  { key: 'item_count',      label: 'Items',     render: v => <span style={{ fontWeight: 600 }}>{v}</span> },
-  { key: 'total_amount',    label: 'Total',     render: v => <b style={{ color: 'var(--color-accent-green)' }}>{formatCurrency(v)}</b> },
-  { key: 'payment_method',  label: 'Method',    render: v => <span className="badge badge-info" style={{ textTransform: 'capitalize' }}>{v}</span> },
+  { key: 'sale_number',     label: 'Sale #',  render: v => <code style={{ fontSize: '0.8rem', color: 'var(--color-accent-blue)' }}>{v}</code> },
+  { key: 'sale_date',       label: 'Date',    render: v => formatDate(v) },
+  { key: 'item_count',      label: 'Items',   render: v => <b>{v}</b> },
+  { key: 'total_amount',    label: 'Total',   render: v => <b style={{ color: 'var(--color-accent-green)' }}>{formatCurrency(v)}</b> },
+  { key: 'payment_method',  label: 'Method',  render: v => <span className="badge badge-info" style={{ textTransform: 'capitalize' }}>{v}</span> },
   { key: 'created_by_name', label: 'By' },
 ];
 
@@ -41,16 +41,19 @@ export default function SalesPage() {
   const addToast = useUiStore(s => s.addToast);
   const { user } = useAuth();
   const canCreate = ['super_admin', 'store_manager', 'sales_officer', 'accountant'].includes(user?.role);
+  const canDelete = ['super_admin', 'store_manager'].includes(user?.role);
 
-  const [rows, setRows]           = useState([]);
-  const [inventory, setInventory] = useState([]);
-  const [loading, setLoading]     = useState(true);
+  const [rows, setRows]             = useState([]);
+  const [inventory, setInventory]   = useState([]);
+  const [loading, setLoading]       = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
-  const [viewSale, setViewSale]   = useState(null);
-  const [viewItems, setViewItems] = useState([]);
+  const [viewSale, setViewSale]     = useState(null);
+  const [viewItems, setViewItems]   = useState([]);
   const [viewLoading, setViewLoading] = useState(false);
-  const [saving, setSaving]       = useState(false);
-  const [form, setForm]           = useState(blankForm());
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting]     = useState(false);
+  const [saving, setSaving]         = useState(false);
+  const [form, setForm]             = useState(blankForm());
 
   const load = useCallback(async () => {
     try {
@@ -58,8 +61,8 @@ export default function SalesPage() {
         api.get('/sales'),
         api.get('/inventory'),
       ]);
-      setRows(sales.data.data);
-      setInventory(inv.data.data);
+      setRows(sales.data?.data || []);
+      setInventory(inv.data?.data || []);
     } catch {
       addToast({ type: 'error', message: 'Failed to load sales data' });
     } finally {
@@ -69,13 +72,14 @@ export default function SalesPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  // ── View sale details ──────────────────────────────────────
   async function openView(sale) {
     setViewSale(sale);
     setViewItems([]);
     setViewLoading(true);
     try {
       const { data } = await api.get(`/sales/${sale.id}`);
-      setViewItems(data.data.items || []);
+      setViewItems(data?.data?.items || []);
     } catch {
       addToast({ type: 'error', message: 'Failed to load sale details' });
     } finally {
@@ -83,6 +87,9 @@ export default function SalesPage() {
     }
   }
 
+  function closeView() { setViewSale(null); setViewItems([]); }
+
+  // ── Create form helpers ────────────────────────────────────
   function openCreate() { setForm(blankForm()); setCreateOpen(true); }
 
   function setField(k, v) { setForm(f => ({ ...f, [k]: v })); }
@@ -92,12 +99,12 @@ export default function SalesPage() {
       const items = f.items.map((it, i) => {
         if (i !== idx) return it;
         const updated = { ...it, [k]: v };
-        // Auto-fill description and price when inventory item selected
+        // Auto-fill description and price from inventory when item is selected
         if (k === 'inventory_item_id' && v) {
-          const inv = f._inv?.find(i => String(i.id) === String(v));
-          if (inv) {
-            updated.description = inv.item_name;
-            updated.unit_price  = String(inv.unit_cost);
+          const invItem = inventory.find(inv => String(inv.id) === String(v));
+          if (invItem) {
+            updated.description = invItem.item_name;
+            updated.unit_price  = String(invItem.unit_cost);
           }
         }
         return updated;
@@ -106,23 +113,25 @@ export default function SalesPage() {
     });
   }
 
-  // Store inventory list in form state so setItem can access it
-  useEffect(() => {
-    setForm(f => ({ ...f, _inv: inventory }));
-  }, [inventory]);
+  function addItem()     { setForm(f => ({ ...f, items: [...f.items, blankItem()] })); }
+  function removeItem(i) { setForm(f => ({ ...f, items: f.items.filter((_, idx) => idx !== i) })); }
 
-  function addItem()      { setForm(f => ({ ...f, items: [...f.items, blankItem()] })); }
-  function removeItem(i)  { setForm(f => ({ ...f, items: f.items.filter((_, idx) => idx !== i) })); }
-
-  const total = form.items.reduce(
-    (s, it) => s + (parseFloat(it.quantity) || 0) * (parseFloat(it.unit_price) || 0), 0
+  const total = (form.items || []).reduce(
+    (s, it) => s + (parseFloat(it.quantity) || 0) * (parseFloat(it.unit_price) || 0),
+    0
   );
 
-  const isValid = form.sale_date &&
+  const isValid =
+    !!form.sale_date &&
     form.items.length > 0 &&
-    form.items.every(it => (it.description || it.inventory_item_id) && parseFloat(it.quantity) > 0 && parseFloat(it.unit_price) >= 0) &&
+    form.items.every(it =>
+      (it.description || it.inventory_item_id) &&
+      parseFloat(it.quantity) > 0 &&
+      parseFloat(it.unit_price) >= 0
+    ) &&
     total > 0;
 
+  // ── Save sale ──────────────────────────────────────────────
   async function save() {
     if (!isValid) return addToast({ type: 'error', message: 'Fill all required fields' });
     setSaving(true);
@@ -149,6 +158,22 @@ export default function SalesPage() {
     }
   }
 
+  // ── Delete sale ────────────────────────────────────────────
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      await api.delete(`/sales/${deleteTarget.id}`);
+      addToast({ type: 'success', message: 'Sale deleted and inventory restored' });
+      setDeleteTarget(null);
+      load();
+    } catch (err) {
+      addToast({ type: 'error', message: err.response?.data?.error || 'Delete failed' });
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  // ── Render ─────────────────────────────────────────────────
   return (
     <div className="page-enter">
       <div className="page-header">
@@ -167,9 +192,21 @@ export default function SalesPage() {
         searchable
         searchPlaceholder="Search sales…"
         actions={r => (
-          <button className="btn-icon" title="View details" onClick={() => openView(r)}>
-            <MdVisibility />
-          </button>
+          <>
+            <button className="btn-icon" title="View details" onClick={() => openView(r)}>
+              <MdVisibility />
+            </button>
+            {canDelete && (
+              <button
+                className="btn-icon"
+                title="Delete sale"
+                style={{ color: 'var(--color-accent-red)' }}
+                onClick={() => setDeleteTarget(r)}
+              >
+                <MdDelete />
+              </button>
+            )}
+          </>
         )}
       />
 
@@ -181,7 +218,9 @@ export default function SalesPage() {
         size="lg"
         footer={
           <>
-            <button className="btn btn-secondary" onClick={() => setCreateOpen(false)} disabled={saving}>Cancel</button>
+            <button className="btn btn-secondary" onClick={() => setCreateOpen(false)} disabled={saving}>
+              Cancel
+            </button>
             <button className="btn btn-primary" onClick={save} disabled={saving || !isValid}>
               {saving ? 'Processing…' : 'Process Sale'}
             </button>
@@ -207,18 +246,13 @@ export default function SalesPage() {
             </FormField>
           </div>
 
-          {/* Items */}
+          {/* Items table */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
               <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 Items Sold
               </span>
-              <button
-                className="btn btn-secondary"
-                style={{ padding: '0.25rem 0.65rem', fontSize: '0.8rem' }}
-                onClick={addItem}
-                type="button"
-              >
+              <button className="btn btn-secondary" style={{ padding: '0.25rem 0.65rem', fontSize: '0.8rem' }} onClick={addItem} type="button">
                 <MdAdd /> Add Row
               </button>
             </div>
@@ -227,35 +261,38 @@ export default function SalesPage() {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.83rem' }}>
                 <thead style={{ background: 'var(--color-bg-tertiary)' }}>
                   <tr>
-                    {['Inventory Item', 'Description', 'Qty', 'Price (TZS)', 'Line Total', ''].map(h => (
+                    {['Item (Inventory)', 'Description', 'Qty', 'Price (TZS)', 'Line Total', ''].map(h => (
                       <th key={h} style={{ padding: '0.55rem 0.6rem', textAlign: 'left', fontWeight: 600, color: 'var(--color-text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {form.items.map((it, idx) => (
+                  {(form.items || []).map((it, idx) => (
                     <tr key={idx} style={{ borderTop: '1px solid var(--color-border)' }}>
                       {/* Inventory select */}
-                      <td style={{ padding: '0.4rem 0.5rem', minWidth: 140 }}>
+                      <td style={{ padding: '0.4rem 0.5rem', minWidth: 150 }}>
                         <select
                           value={it.inventory_item_id}
                           onChange={e => setItem(idx, 'inventory_item_id', e.target.value)}
-                          style={{ width: '100%', minWidth: 130 }}
+                          style={{ width: '100%', minWidth: 140 }}
                         >
-                          <option value="">— manual —</option>
-                          {inventory.map(i => (
-                            <option key={i.id} value={i.id}>
-                              {i.item_name} ({parseFloat(i.quantity)} {i.unit})
-                            </option>
-                          ))}
+                          <option value="">— manual entry —</option>
+                          {inventory
+                            .filter(i => parseFloat(i.quantity) > 0)
+                            .map(i => (
+                              <option key={i.id} value={i.id}>
+                                {i.item_name} ({parseFloat(i.quantity)} {i.unit} avail.)
+                              </option>
+                            ))
+                          }
                         </select>
                       </td>
                       {/* Description */}
-                      <td style={{ padding: '0.4rem 0.5rem', minWidth: 140 }}>
+                      <td style={{ padding: '0.4rem 0.5rem', minWidth: 130 }}>
                         <input
                           value={it.description}
                           onChange={e => setItem(idx, 'description', e.target.value)}
-                          placeholder="Item description"
+                          placeholder="Description"
                           style={{ width: '100%', minWidth: 120 }}
                         />
                       </td>
@@ -289,12 +326,7 @@ export default function SalesPage() {
                       {/* Remove */}
                       <td style={{ padding: '0.4rem 0.4rem', width: 36 }}>
                         {form.items.length > 1 && (
-                          <button
-                            className="btn-icon"
-                            type="button"
-                            style={{ color: 'var(--color-accent-red)' }}
-                            onClick={() => removeItem(idx)}
-                          >
+                          <button className="btn-icon" type="button" style={{ color: 'var(--color-accent-red)' }} onClick={() => removeItem(idx)}>
                             <MdDelete />
                           </button>
                         )}
@@ -327,46 +359,52 @@ export default function SalesPage() {
             borderRadius: 'var(--radius)',
             border: '1px solid var(--color-border)',
           }}>
-            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
-              Total Amount
-            </span>
+            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--color-text-secondary)' }}>Total Amount</span>
             <span style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--color-accent-green)' }}>
               {formatCurrency(total)}
             </span>
           </div>
-
         </div>
       </Modal>
 
       {/* ── View Sale Modal ─────────────────────────────────── */}
       <Modal
         open={!!viewSale}
-        onClose={() => { setViewSale(null); setViewItems([]); }}
+        onClose={closeView}
         title={viewSale ? `Sale — ${viewSale.sale_number}` : ''}
         size="md"
-        footer={<button className="btn btn-secondary" onClick={() => { setViewSale(null); setViewItems([]); }}>Close</button>}
+        footer={<button className="btn btn-secondary" onClick={closeView}>Close</button>}
       >
         {viewSale && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.875rem' }}>
             <div className="form-row">
-              <div><span style={{ color: 'var(--color-text-secondary)' }}>Date</span><br /><b>{formatDate(viewSale.sale_date)}</b></div>
-              <div><span style={{ color: 'var(--color-text-secondary)' }}>Method</span><br /><span className="badge badge-info" style={{ textTransform: 'capitalize' }}>{viewSale.payment_method}</span></div>
-              <div><span style={{ color: 'var(--color-text-secondary)' }}>Recorded by</span><br /><b>{viewSale.created_by_name}</b></div>
+              <div>
+                <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Date</span>
+                <div style={{ fontWeight: 600, marginTop: 2 }}>{formatDate(viewSale.sale_date)}</div>
+              </div>
+              <div>
+                <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Method</span>
+                <div style={{ marginTop: 2 }}><span className="badge badge-info" style={{ textTransform: 'capitalize' }}>{viewSale.payment_method}</span></div>
+              </div>
+              <div>
+                <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recorded By</span>
+                <div style={{ fontWeight: 600, marginTop: 2 }}>{viewSale.created_by_name}</div>
+              </div>
             </div>
 
             {viewLoading ? (
               <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--color-text-secondary)' }}>Loading…</div>
-            ) : viewItems.length > 0 ? (
+            ) : (viewItems || []).length > 0 ? (
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.83rem' }}>
                 <thead style={{ background: 'var(--color-bg-tertiary)' }}>
                   <tr>
-                    {['Item', 'Qty', 'Price', 'Total'].map(h => (
+                    {['Item', 'Qty', 'Unit Price', 'Total'].map(h => (
                       <th key={h} style={{ padding: '0.5rem 0.6rem', textAlign: 'left', fontWeight: 600, color: 'var(--color-text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', borderBottom: '1px solid var(--color-border)' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {viewItems.map((it, i) => (
+                  {(viewItems || []).map((it, i) => (
                     <tr key={i} style={{ borderBottom: '1px solid var(--color-border)' }}>
                       <td style={{ padding: '0.45rem 0.6rem' }}>{it.description || it.item_name || '—'}</td>
                       <td style={{ padding: '0.45rem 0.6rem' }}>{parseFloat(it.quantity)} {it.unit || ''}</td>
@@ -376,7 +414,9 @@ export default function SalesPage() {
                   ))}
                 </tbody>
               </table>
-            ) : null}
+            ) : (
+              <div style={{ color: 'var(--color-text-secondary)', padding: '0.5rem 0' }}>No items found.</div>
+            )}
 
             <div style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -399,6 +439,17 @@ export default function SalesPage() {
           </div>
         )}
       </Modal>
+
+      {/* ── Delete Confirm ──────────────────────────────────── */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        loading={deleting}
+        title="Delete Sale"
+        message={`Delete sale ${deleteTarget?.sale_number}? Inventory will be restored automatically.`}
+        variant="danger"
+      />
     </div>
   );
 }

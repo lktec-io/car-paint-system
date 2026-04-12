@@ -12,7 +12,7 @@ const TABS = [
   { id: 'profit-loss',   label: 'Profit & Loss' },
   { id: 'balance-sheet', label: 'Balance Sheet' },
   { id: 'trial-balance', label: 'Trial Balance' },
-  { id: 'invoices',      label: 'Invoice Report' },
+  { id: 'sales',         label: 'Sales Report' },
   { id: 'expenses',      label: 'Expense Report' },
 ];
 
@@ -40,7 +40,7 @@ export default function ReportsPage() {
       if (tab === 'profit-loss')   res = await api.get('/reports/profit-loss',   { params: { from, to } });
       else if (tab === 'balance-sheet') res = await api.get('/reports/balance-sheet', { params: { as_of: to } });
       else if (tab === 'trial-balance') res = await api.get('/reports/trial-balance', { params: { as_of: to } });
-      else if (tab === 'invoices')  res = await api.get('/invoices');
+      else if (tab === 'sales')      res = await api.get('/sales');
       else if (tab === 'expenses')  res = await api.get('/expenses');
       setData(res.data.data);
     } catch { addToast({ type: 'error', message: 'Failed to load report' }); }
@@ -60,8 +60,8 @@ export default function ReportsPage() {
         exportReportPdf({ title: 'Balance Sheet', sections, filename: 'balance-sheet', subtitle: `As of ${formatDate(to)}` });
       } else if (tab === 'trial-balance') {
         exportTablePdf({ title: 'Trial Balance', headers: ['Account Code', 'Account Name', 'Debit', 'Credit'], rows: data.map(r => [r.account_code, r.account_name, formatCurrency(r.total_debit), formatCurrency(r.total_credit)]), filename: 'trial-balance', subtitle: `As of ${formatDate(to)}` });
-      } else if (tab === 'invoices') {
-        exportTablePdf({ title: 'Invoice Report', headers: ['Invoice #', 'Customer', 'Date', 'Total', 'Paid', 'Status'], rows: data.map(r => [r.invoice_number, r.customer_name||'Walk-in', formatDate(r.invoice_date), formatCurrency(r.total_amount), formatCurrency(r.amount_paid), r.status]), filename: 'invoices', subtitle });
+      } else if (tab === 'sales') {
+        exportTablePdf({ title: 'Sales Report', headers: ['Sale #', 'Date', 'Items', 'Total', 'Method', 'By'], rows: (data || []).map(r => [r.sale_number, formatDate(r.sale_date), r.item_count, formatCurrency(r.total_amount), r.payment_method, r.created_by_name]), filename: 'sales-report', subtitle });
       } else if (tab === 'expenses') {
         exportTablePdf({ title: 'Expense Report', headers: ['Date', 'Category', 'Description', 'Method', 'Amount'], rows: data.map(r => [formatDate(r.expense_date), r.category_name, r.description||'', r.payment_method, formatCurrency(r.amount)]), filename: 'expenses', subtitle });
       }
@@ -81,8 +81,8 @@ export default function ReportsPage() {
         await exportReportExcel({ title: 'Balance Sheet', sections, filename: 'balance-sheet' });
       } else if (tab === 'trial-balance') {
         await exportTableExcel({ sheetName: 'Trial Balance', title: 'Trial Balance', headers: ['Account Code', 'Account Name', 'Debit', 'Credit'], rows: data.map(r => [r.account_code, r.account_name, formatCurrency(r.total_debit), formatCurrency(r.total_credit)]), filename: 'trial-balance' });
-      } else if (tab === 'invoices') {
-        await exportTableExcel({ sheetName: 'Invoices', title: 'Invoice Report', headers: ['Invoice #', 'Customer', 'Date', 'Total', 'Paid', 'Status'], rows: data.map(r => [r.invoice_number, r.customer_name||'Walk-in', formatDate(r.invoice_date), formatCurrency(r.total_amount), formatCurrency(r.amount_paid), r.status]), filename: 'invoices' });
+      } else if (tab === 'sales') {
+        await exportTableExcel({ sheetName: 'Sales', title: 'Sales Report', headers: ['Sale #', 'Date', 'Items', 'Total', 'Method', 'By'], rows: (data || []).map(r => [r.sale_number, formatDate(r.sale_date), r.item_count, formatCurrency(r.total_amount), r.payment_method, r.created_by_name]), filename: 'sales-report' });
       } else if (tab === 'expenses') {
         await exportTableExcel({ sheetName: 'Expenses', title: 'Expense Report', headers: ['Date', 'Category', 'Description', 'Method', 'Amount'], rows: data.map(r => [formatDate(r.expense_date), r.category_name, r.description||'', r.payment_method, formatCurrency(r.amount)]), filename: 'expenses' });
       }
@@ -128,7 +128,7 @@ export default function ReportsPage() {
 
       {/* Filters */}
       <div className="reports-filters">
-        {(tab === 'invoices' || tab === 'expenses' || tab === 'profit-loss') && (
+        {(tab === 'sales' || tab === 'expenses' || tab === 'profit-loss') && (
           <>
             <label>From <input type="date" value={from} onChange={e => setFrom(e.target.value)} /></label>
             <label>To   <input type="date" value={to}   onChange={e => setTo(e.target.value)} /></label>
@@ -160,10 +160,17 @@ export default function ReportsPage() {
         {!loading && data && tab === 'profit-loss' && <PLReport data={data} />}
         {!loading && data && tab === 'balance-sheet' && <BSReport data={data} />}
 
-        {!loading && data && tab === 'invoices' && Array.isArray(data) && (
+        {!loading && data && tab === 'sales' && Array.isArray(data) && (
           <ReportTable
-            headers={['Invoice #', 'Customer', 'Date', 'Due', 'Total', 'Paid', 'Status']}
-            rows={data.map(r => [r.invoice_number, r.customer_name||'Walk-in', formatDate(r.invoice_date), formatDate(r.due_date), formatCurrency(r.total_amount), formatCurrency(r.amount_paid), r.status])}
+            headers={['Sale #', 'Date', 'Items', 'Total (TZS)', 'Method', 'Recorded By']}
+            rows={(data || []).map(r => [
+              r.sale_number,
+              formatDate(r.sale_date),
+              r.item_count,
+              formatCurrency(r.total_amount),
+              r.payment_method,
+              r.created_by_name,
+            ])}
           />
         )}
 

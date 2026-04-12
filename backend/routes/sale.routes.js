@@ -23,4 +23,13 @@ router.post(
   ctrl.create
 );
 
+router.delete(
+  '/:id',
+  authorize(['super_admin', 'store_manager']),
+  auditLog('DELETE', 'invoices'),
+  param('id').isInt(),
+  validate,
+  ctrl.deleteSale
+);
+
 module.exports = router;

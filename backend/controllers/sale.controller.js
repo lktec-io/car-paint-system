@@ -198,4 +198,57 @@ async function create(req, res, next) {
   }
 }
 
-module.exports = { list, get, create };
+async function deleteSale(req, res, next) {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    const { id } = req.params;
+
+    // Verify sale belongs to this org
+    const [sales] = await conn.query(
+      'SELECT id FROM invoices WHERE id = ? AND organization_id = ? LIMIT 1',
+      [id, req.orgId]
+    );
+    if (!sales.length) {
+      await conn.rollback();
+      return res.status(404).json({ success: false, error: 'Sale not found' });
+    }
+
+    // Get line items to reverse inventory
+    const [items] = await conn.query(
+      'SELECT inventory_item_id, quantity FROM invoice_items WHERE invoice_id = ?',
+      [id]
+    );
+
+    // Restore inventory for each linked item
+    for (const item of items) {
+      if (item.inventory_item_id) {
+        await conn.query(
+          'UPDATE inventory_items SET quantity = quantity + ? WHERE id = ? AND organization_id = ?',
+          [item.quantity, item.inventory_item_id, req.orgId]
+        );
+        // Record reversal movement
+        await conn.query(
+          `INSERT INTO stock_movements (inventory_item_id, movement_type, quantity, reference_type, reference_id, notes, created_by)
+           VALUES (?, 'in', ?, 'sale_reversal', ?, 'Sale deleted — stock restored', ?)`,
+          [item.inventory_item_id, item.quantity, id, req.user.id]
+        );
+      }
+    }
+
+    // Delete line items then the sale record
+    await conn.query('DELETE FROM invoice_items WHERE invoice_id = ?', [id]);
+    await conn.query('DELETE FROM invoices WHERE id = ? AND organization_id = ?', [id, req.orgId]);
+
+    await conn.commit();
+    res.json({ success: true, data: { message: 'Sale deleted and inventory restored' } });
+  } catch (err) {
+    await conn.rollback();
+    next(err);
+  } finally {
+    conn.release();
+  }
+}
+
+module.exports = { list, get, create, deleteSale };
