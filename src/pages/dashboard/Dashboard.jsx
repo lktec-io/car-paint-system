@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { MdTrendingUp, MdAccountBalance, MdWarning, MdReceipt } from 'react-icons/md';
 import { FiRefreshCw, FiLoader } from 'react-icons/fi';
 import {
-  AreaChart, Area, PieChart, Pie, Cell,
+  AreaChart, Area, PieChart, Pie,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 import api from '../../api/axios';
@@ -13,21 +13,18 @@ import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
 import '../../styles/Dashboard.css';
 
-const PIE_COLORS = ['#F97316','#FB923C','#FDBA74','#3498db','#2ecc71','#e74c3c','#9b59b6','#1abc9c'];
-
-const STATUS_CLASS = { invoice: 'badge-info', expense: 'badge-danger' };
+const PIE_COLORS = ['#F97316','#3498db','#2ecc71','#e74c3c','#9b59b6','#1abc9c','#f39c12','#FB923C'];
 
 export default function Dashboard() {
-  const addToast  = useUiStore(s => s.addToast);
-  const user      = useAuthStore(s => s.user);
+  const addToast = useUiStore(s => s.addToast);
+  const user     = useAuthStore(s => s.user);
 
-  const [summary, setSummary]     = useState(null);
-  const [revenue, setRevenue]     = useState([]);
-  const [expChart, setExpChart]   = useState([]);
-  const [activity, setActivity]   = useState([]);
-  const [loading, setLoading]     = useState(true);
+  const [summary, setSummary]   = useState(null);
+  const [revenue, setRevenue]   = useState([]);
+  const [expChart, setExpChart] = useState([]);
+  const [activity, setActivity] = useState([]);
+  const [loading, setLoading]   = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
   const [chartMonths, setChartMonths] = useState(6);
 
   const load = useCallback(async (isRefresh = false) => {
@@ -40,10 +37,19 @@ export default function Dashboard() {
         api.get('/dashboard/charts/expenses', { params: { months: chartMonths } }),
         api.get('/dashboard/recent-activity'),
       ]);
-
-      setSummary(sum.data?.data || null);
-      setRevenue(rev.data?.data || []);
-      setExpChart(exp.data?.data || []);
+      setSummary(sum.data?.data  || null);
+      setRevenue(rev.data?.data  || []);
+      // Sanitise + embed fill color so Cell is not needed (Recharts v3)
+      setExpChart(
+        (exp.data?.data || [])
+          .map((r, i) => ({
+            ...r,
+            total:    parseFloat(r.total) || 0,
+            category: r.category || 'Uncategorised',
+            fill:     PIE_COLORS[i % PIE_COLORS.length],
+          }))
+          .filter(r => r.total > 0)
+      );
       setActivity(act.data?.data || []);
     } catch {
       addToast({ type: 'error', message: 'Failed to load dashboard' });
@@ -55,20 +61,24 @@ export default function Dashboard() {
 
   useEffect(() => { load(); }, [load]);
 
-  // ✅ SAFE FALLBACK (CRITICAL FIX)
+  // Safe fallback so stat cards never crash on null summary
   const s = summary || {
-    revenue: { month: 0, collected: 0 },
+    revenue:  { month: 0, collected: 0 },
     expenses: { month: 0 },
-    profit: { month: 0 },
+    profit:   { month: 0 },
     invoices: { outstanding: 0, overdue: 0 },
-    lowStock: []
+    lowStock: [],
   };
+
+  // Precomputed grand total for percentage calculations
+  const grandTotal = expChart.reduce((acc, r) => acc + r.total, 0);
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 
-  const customTooltip = ({ active, payload, label }) => {
+  // ── Revenue tooltip ───────────────────────────────────────────
+  const revenueTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
     return (
       <div style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '0.6rem 0.9rem', fontSize: 12 }}>
@@ -76,6 +86,20 @@ export default function Dashboard() {
         {payload.map((p, i) => (
           <p key={i} style={{ color: p.color }}>{p.name}: {formatCurrency(p.value)}</p>
         ))}
+      </div>
+    );
+  };
+
+  // ── Expense doughnut tooltip ──────────────────────────────────
+  const expTooltip = ({ active, payload }) => {
+    if (!active || !payload?.length) return null;
+    const { name, value } = payload[0];
+    const pct = grandTotal > 0 ? ((value / grandTotal) * 100).toFixed(1) : '0';
+    return (
+      <div style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '0.65rem 0.95rem', fontSize: 12, minWidth: 160 }}>
+        <p style={{ fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 6 }}>{name}</p>
+        <p style={{ color: 'var(--color-accent-red)', fontWeight: 600 }}>{formatCurrency(value)}</p>
+        <p style={{ color: 'var(--color-text-secondary)', marginTop: 2 }}>{pct}% of total</p>
       </div>
     );
   };
@@ -95,7 +119,7 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* Stats */}
+      {/* Stat cards */}
       <div className="dashboard-grid stagger-children">
         <StatCard icon={<MdTrendingUp />} label="Revenue (This Month)" color="green" loading={loading}
           value={formatCurrency(s.revenue.month)}
@@ -113,10 +137,10 @@ export default function Dashboard() {
           sub={`${s.invoices.overdue || 0} overdue`} />
       </div>
 
-      {/* Filters */}
+      {/* Period filter */}
       <div className="chart-filters">
         <span>Show last:</span>
-        {[3,6,12].map(m => (
+        {[3, 6, 12].map(m => (
           <button key={m}
             className={`chart-filter-btn${chartMonths === m ? ' active' : ''}`}
             onClick={() => setChartMonths(m)}>
@@ -125,85 +149,114 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Charts */}
+      {/* Charts row */}
       <div className="dashboard-charts">
 
-        {/* Revenue */}
+        {/* Revenue area chart */}
         <div className="chart-card">
           <p className="chart-card-title">Revenue vs Collections</p>
-          <ResponsiveContainer width="100%" height={240}>
-            <AreaChart data={revenue}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip content={customTooltip} />
-              <Legend />
-              <Area dataKey="revenue" stroke="#F97316" fillOpacity={0.2} />
-              <Area dataKey="collected" stroke="#FB923C" fillOpacity={0.2} />
-            </AreaChart>
-          </ResponsiveContainer>
+          {loading ? (
+            <div className="chart-skeleton" />
+          ) : revenue.length === 0 ? (
+            <div className="chart-empty">No revenue data for this period</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={240}>
+              <AreaChart data={revenue}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }} />
+                <YAxis tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }} />
+                <Tooltip content={revenueTooltip} />
+                <Legend formatter={v => <span style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)' }}>{v}</span>} />
+                <Area dataKey="revenue"   stroke="#F97316" fill="rgba(249,115,22,0.15)"  strokeWidth={2} />
+                <Area dataKey="collected" stroke="#2ecc71" fill="rgba(46,204,113,0.12)"  strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
-        {/* Expenses */}
+        {/* Expenses doughnut chart */}
         <div className="chart-card">
           <p className="chart-card-title">Expenses by Category</p>
-          {expChart.length > 0 ? (
-            <ResponsiveContainer width="100%" height={240}>
-              <PieChart>
-                <Pie
-                  data={expChart}
-                  dataKey="total"
-                  nameKey="category"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={85}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  labelLine={false}
-                >
-                  {expChart.map((_, i) => (
-                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value, name) => [formatCurrency(value), name]}
-                  contentStyle={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }}
-                />
-                <Legend
-                  formatter={(value) => <span style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)' }}>{value}</span>}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+
+          {loading ? (
+            <div className="chart-skeleton" />
+          ) : expChart.length === 0 ? (
+            <div className="chart-empty">No expense data for this period</div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>
-              No expense data for this period
-            </div>
+            <>
+              {/* Doughnut + center label */}
+              <div style={{ position: 'relative' }}>
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={expChart}
+                      dataKey="total"
+                      nameKey="category"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius="52%"
+                      outerRadius="78%"
+                      paddingAngle={2}
+                      stroke="none"
+                      isAnimationActive
+                      animationDuration={600}
+                    />
+                    <Tooltip content={expTooltip} />
+                  </PieChart>
+                </ResponsiveContainer>
+
+                {/* Center total (absolute overlay — stable across all Recharts versions) */}
+                <div className="doughnut-center" aria-hidden="true">
+                  <span className="doughnut-center-label">Total</span>
+                  <span className="doughnut-center-value">{formatCurrency(grandTotal)}</span>
+                </div>
+              </div>
+
+              {/* Category legend */}
+              <div className="exp-legend">
+                {expChart.map((item, i) => {
+                  const pct = grandTotal > 0
+                    ? ((item.total / grandTotal) * 100).toFixed(1)
+                    : '0';
+                  return (
+                    <div key={i} className="exp-legend-item">
+                      <span
+                        className="exp-legend-swatch"
+                        style={{ background: item.fill }}
+                      />
+                      <span className="exp-legend-name">{item.category}</span>
+                      <span className="exp-legend-pct">{pct}%</span>
+                      <span className="exp-legend-amt">{formatCurrency(item.total)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
 
       </div>
 
-      {/* Bottom */}
+      {/* Bottom row */}
       <div className="dashboard-bottom">
 
-        {/* Low Stock */}
+        {/* Low stock */}
         <div className="chart-card">
           <p className="chart-card-title">
             Low Stock Alerts
-            {s.lowStock.length > 0 && (
+            {(s.lowStock?.length || 0) > 0 && (
               <span className="badge badge-danger" style={{ marginLeft: '0.5rem', verticalAlign: 'middle' }}>
                 {s.lowStock.length}
               </span>
             )}
           </p>
-          {s.lowStock.length > 0 ? (
+          {(s.lowStock?.length || 0) > 0 ? (
             <div className="low-stock-list">
               {s.lowStock.map(item => (
                 <div key={item.id} className="low-stock-item">
                   <span className="low-stock-item-name">{item.item_name}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span className="low-stock-qty">
-                      {parseFloat(item.quantity)} left
-                    </span>
+                    <span className="low-stock-qty">{parseFloat(item.quantity)} left</span>
                     <span style={{ fontSize: '0.72rem', color: 'var(--color-text-secondary)' }}>
                       / min {parseFloat(item.reorder_level)}
                     </span>
@@ -218,10 +271,10 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Activity */}
+        {/* Recent activity */}
         <div className="chart-card">
           <p className="chart-card-title">Recent Activity</p>
-          {activity.length > 0 ? (
+          {(activity?.length || 0) > 0 ? (
             <div className="activity-list">
               {activity.map((item, i) => (
                 <div key={i} className="activity-item">
