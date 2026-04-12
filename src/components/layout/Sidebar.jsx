@@ -188,7 +188,7 @@ export default function Sidebar() {
         {/* Header */}
         <div className="sidebar-header">
           <div className="sidebar-logo">
-            <img src="/logo.svg" alt="Silas Paint Store" className="sidebar-logo-img" />
+            <img src="/icons/image.png" alt="Silas Paint Store" className="sidebar-logo-img" />
             {!collapsed && <span className="sidebar-logo-text">Silas Paint Store</span>}
           </div>
           <button className="sidebar-toggle" onClick={toggleSidebar} aria-label="Toggle sidebar">
