@@ -46,12 +46,10 @@ const NAV_CONFIG = [
     roles: ALL_ROLES,
   },
   {
+    path: '/sales',
     label: 'Sales',
     Icon: MdPointOfSale,
     roles: ['super_admin', 'accountant', 'store_manager', 'sales_officer'],
-    children: [
-      { path: '/sales/invoices', label: 'Sales', Icon: MdReceipt },
-    ],
   },
   {
     path: '/expenses',
@@ -75,7 +73,7 @@ const NAV_CONFIG = [
 ];
 
 // Bottom nav shows the 5 most important items on mobile
-const BOTTOM_NAV_PATHS = ['/dashboard', '/inventory', '/sales/invoices', '/reports'];
+const BOTTOM_NAV_PATHS = ['/dashboard', '/inventory', '/sales', '/reports'];
 
 function NavItem({ item, collapsed }) {
   return (
@@ -236,7 +234,7 @@ export default function Sidebar() {
             }
           >
             <item.Icon />
-            <span>{item.path === '/sales/invoices' ? 'Sales' : item.label}</span>
+            <span>{item.label}</span>
           </NavLink>
         ))}
       </nav>

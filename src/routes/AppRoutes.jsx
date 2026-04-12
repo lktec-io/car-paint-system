@@ -13,7 +13,7 @@ import TrialBalance from '../pages/accounting/TrialBalance';
 import ProfitLoss from '../pages/accounting/ProfitLoss';
 import BalanceSheet from '../pages/accounting/BalanceSheet';
 import InventoryPage from '../pages/inventory/InventoryPage';
-import InvoicesPage from '../pages/sales/InvoicesPage';
+import SalesPage from '../pages/sales/SalesPage';
 import ExpensesPage from '../pages/expenses/ExpensesPage';
 import SuppliersPage from '../pages/suppliers/SuppliersPage';
 import ReportsPage from '../pages/reports/ReportsPage';
@@ -91,10 +91,10 @@ export default function AppRoutes() {
 
         {/* Sales */}
         <Route
-          path="/sales/invoices"
+          path="/sales"
           element={
             <ProtectedRoute allowedRoles={['super_admin', 'accountant', 'store_manager', 'sales_officer']}>
-              <InvoicesPage />
+              <SalesPage />
             </ProtectedRoute>
           }
         />

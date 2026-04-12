@@ -24,10 +24,12 @@ router.post('/', authorize(MANAGE), auditLog('CREATE','inventory_items'),
   validate, ctrl.createItem);
 
 router.put('/:id',    authorize(MANAGE), auditLog('UPDATE','inventory_items'), param('id').isInt(), validate, ctrl.updateItem);
-router.delete('/:id', authorize(MANAGE), auditLog('DELETE','inventory_items'), param('id').isInt(), validate, ctrl.deleteItem);
 
 router.post('/categories', authorize(MANAGE), body('name').trim().notEmpty(), validate, ctrl.createCategory);
 
+// Specific sub-resource route must come BEFORE the generic /:id DELETE
 router.delete('/movements/:id', authorize(MANAGE), param('id').isInt(), validate, ctrl.deleteStockMovement);
+
+router.delete('/:id', authorize(MANAGE), auditLog('DELETE','inventory_items'), param('id').isInt(), validate, ctrl.deleteItem);
 
 module.exports = router;
