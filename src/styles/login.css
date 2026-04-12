@@ -93,8 +93,6 @@
   font-size: 0.825rem;
   font-weight: 500;
   color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .input-wrapper {

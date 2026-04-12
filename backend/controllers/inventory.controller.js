@@ -79,6 +79,7 @@ async function deleteItem(req, res, next) {
     const { id } = req.params;
     const [rows] = await pool.query('SELECT id FROM inventory_items WHERE id = ? AND organization_id = ?', [id, req.orgId]);
     if (!rows.length) return res.status(404).json({ success: false, error: 'Item not found' });
+    await pool.query('DELETE FROM job_materials WHERE inventory_item_id = ?', [id]);
     await pool.query('DELETE FROM inventory_items WHERE id = ?', [id]);
     req.auditEntityId = id;
     res.json({ success: true, data: { message: 'Item deleted' } });

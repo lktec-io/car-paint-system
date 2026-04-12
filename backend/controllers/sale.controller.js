@@ -231,7 +231,7 @@ async function deleteSale(req, res, next) {
         // Record reversal movement
         await conn.query(
           `INSERT INTO stock_movements (inventory_item_id, movement_type, quantity, reference_type, reference_id, notes, created_by)
-           VALUES (?, 'in', ?, 'sale_reversal', ?, 'Sale deleted — stock restored', ?)`,
+           VALUES (?, 'in', ?, 'adjustment', ?, 'Sale deleted — stock restored', ?)`,
           [item.inventory_item_id, item.quantity, id, req.user.id]
         );
       }
