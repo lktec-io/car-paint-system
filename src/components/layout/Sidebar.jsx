@@ -50,7 +50,7 @@ const NAV_CONFIG = [
     Icon: MdPointOfSale,
     roles: ['super_admin', 'accountant', 'store_manager', 'sales_officer'],
     children: [
-      { path: '/sales/invoices', label: 'Invoices', Icon: MdReceipt },
+      { path: '/sales/invoices', label: 'Sales', Icon: MdReceipt },
     ],
   },
   {

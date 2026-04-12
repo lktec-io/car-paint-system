@@ -84,7 +84,8 @@ async function getRecentActivity(req, res, next) {
   try {
     const orgId = req.orgId;
     const [invoices] = await pool.query(
-      `SELECT 'invoice' AS type, invoice_number AS ref, total_amount AS amount, invoice_date AS date, status, c.name AS customer_name
+      `SELECT 'invoice' AS type, invoice_number AS ref, total_amount AS amount, invoice_date AS date, status,
+              COALESCE(i.customer_name, c.name, 'Walk-in') AS customer_name
        FROM invoices i LEFT JOIN customers c ON c.id = i.customer_id
        WHERE i.organization_id = ? ORDER BY i.created_at DESC LIMIT 5`,
       [orgId]

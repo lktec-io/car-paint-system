@@ -150,16 +150,33 @@ export default function Dashboard() {
           {expChart.length > 0 ? (
             <ResponsiveContainer width="100%" height={240}>
               <PieChart>
-                <Pie data={expChart} dataKey="total">
+                <Pie
+                  data={expChart}
+                  dataKey="total"
+                  nameKey="category"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={85}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  labelLine={false}
+                >
                   {expChart.map((_, i) => (
                     <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip content={customTooltip} />
+                <Tooltip
+                  formatter={(value, name) => [formatCurrency(value), name]}
+                  contentStyle={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }}
+                />
+                <Legend
+                  formatter={(value) => <span style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)' }}>{value}</span>}
+                />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div>No expense data</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>
+              No expense data for this period
+            </div>
           )}
         </div>
 
@@ -170,26 +187,67 @@ export default function Dashboard() {
 
         {/* Low Stock */}
         <div className="chart-card">
-          <p className="chart-card-title">Low Stock Alerts</p>
+          <p className="chart-card-title">
+            Low Stock Alerts
+            {s.lowStock.length > 0 && (
+              <span className="badge badge-danger" style={{ marginLeft: '0.5rem', verticalAlign: 'middle' }}>
+                {s.lowStock.length}
+              </span>
+            )}
+          </p>
           {s.lowStock.length > 0 ? (
-            s.lowStock.map(item => (
-              <div key={item.id}>
-                {item.item_name} ({item.quantity})
-              </div>
-            ))
-          ) : <p>No issues</p>}
+            <div className="low-stock-list">
+              {s.lowStock.map(item => (
+                <div key={item.id} className="low-stock-item">
+                  <span className="low-stock-item-name">{item.item_name}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span className="low-stock-qty">
+                      {parseFloat(item.quantity)} left
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--color-text-secondary)' }}>
+                      / min {parseFloat(item.reorder_level)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', color: 'var(--color-accent-green)', fontSize: '0.875rem' }}>
+              <span>✓</span> All items adequately stocked
+            </div>
+          )}
         </div>
 
         {/* Activity */}
         <div className="chart-card">
           <p className="chart-card-title">Recent Activity</p>
           {activity.length > 0 ? (
-            activity.map((item, i) => (
-              <div key={i}>
-                {item.type} - {formatCurrency(item.amount)}
-              </div>
-            ))
-          ) : <p>No activity</p>}
+            <div className="activity-list">
+              {activity.map((item, i) => (
+                <div key={i} className="activity-item">
+                  <div className="activity-item-left">
+                    <span className="activity-item-ref">{item.ref}</span>
+                    <span className="activity-item-meta">
+                      {item.customer_name && item.type === 'invoice' ? item.customer_name + ' · ' : ''}
+                      {formatDate(item.date)}
+                    </span>
+                  </div>
+                  <div className="activity-item-right">
+                    <span className={`activity-item-amount ${item.type === 'expense' ? 'text-danger' : 'text-success'}`}>
+                      {item.type === 'expense' ? '−' : '+'}{formatCurrency(item.amount)}
+                    </span>
+                    <span className={`badge badge-${item.type === 'expense' ? 'danger' : item.status === 'paid' ? 'success' : item.status === 'partial' ? 'warning' : 'info'}`}>
+                      {item.type === 'expense' ? 'expense' : item.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ padding: '0.75rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>
+              No recent activity
+            </div>
+          )}
         </div>
 
       </div>
