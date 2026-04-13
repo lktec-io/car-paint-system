@@ -160,12 +160,48 @@ export function buildWhatsAppMessage(sale, items) {
   ].join('\n');
 }
 
-/* ── Open WhatsApp ───────────────────────────────────────────── */
+/**
+ * Normalise any phone number to E.164 digits-only (no +).
+ *
+ * Accepted formats (Tanzania examples):
+ *   0712345678      → 255712345678
+ *   +255712345678   → 255712345678
+ *   255712345678    → 255712345678
+ *   712345678       → 255712345678   (9 bare digits)
+ *
+ * Works for any country — only the leading-0 rule is TZ-specific.
+ */
+export function normalisePhone(rawPhone) {
+  // 1. Strip everything that is not a digit (spaces, dashes, dots, +, parens)
+  const digits = String(rawPhone).replace(/\D/g, '');
+
+  // 2. Leading 0  → replace with country code 255  (07xx… → 255 7xx…)
+  if (digits.startsWith('0')) return '255' + digits.slice(1);
+
+  // 3. Already has 255 prefix  → keep as-is
+  if (digits.startsWith('255')) return digits;
+
+  // 4. 9 bare digits (no country code, no leading 0)  → prepend 255
+  if (digits.length === 9) return '255' + digits;
+
+  // 5. Any other format (international number already normalised, etc.) → use as-is
+  return digits;
+}
+
+/**
+ * Build a wa.me URL for the given normalised number and plain-text message.
+ * The same URL works for WhatsApp Messenger and WhatsApp Business — no separate logic needed.
+ */
+export function buildWhatsAppUrl(phone, message) {
+  const number = normalisePhone(phone);
+  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+}
+
+/**
+ * Open WhatsApp (Messenger or Business) with a pre-filled message.
+ * On mobile the OS picks the installed app; on desktop it opens WhatsApp Web.
+ */
 export function openWhatsApp(rawPhone, message) {
-  let p = rawPhone.replace(/\D/g, ''); // strip all non-digits
-  if (p.startsWith('0') && p.length >= 10) p = '255' + p.slice(1);   // 07xx → 2557xx
-  if (p.length === 9) p = '255' + p;                                   // 7xx  → 2557xx
-  if (p.startsWith('+')) p = p.slice(1);
-  const url = `https://wa.me/${p}?text=${encodeURIComponent(message)}`;
+  const url = buildWhatsAppUrl(rawPhone, message);
   window.open(url, '_blank', 'noopener,noreferrer');
 }
