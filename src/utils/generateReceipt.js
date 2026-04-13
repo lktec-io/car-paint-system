@@ -15,9 +15,8 @@ function fmtDate(d) {
 /* ── PDF Receipt ─────────────────────────────────────────────── */
 export function downloadReceiptPDF(sale, items) {
   const doc = new jsPDF({ unit: 'mm', format: 'a5', orientation: 'portrait' });
-  const W = doc.internal.pageSize.getWidth(); // 148 mm for A5
+  const W = doc.internal.pageSize.getWidth();
 
-  // ── Dark header ──────────────────────────────────────────────
   doc.setFillColor(13, 27, 42);
   doc.rect(0, 0, W, 38, 'F');
 
@@ -31,7 +30,6 @@ export function downloadReceiptPDF(sale, items) {
   doc.setTextColor(160, 190, 210);
   doc.text('Official Sales Receipt  ·  Dar es Salaam, Tanzania', W / 2, 21, { align: 'center' });
 
-  // Paid badge
   doc.setFillColor(46, 204, 113);
   doc.roundedRect(W / 2 - 12, 25, 24, 8, 2, 2, 'F');
   doc.setTextColor(15, 25, 35);
@@ -39,34 +37,16 @@ export function downloadReceiptPDF(sale, items) {
   doc.setFontSize(7.5);
   doc.text('✓  PAID', W / 2, 30.5, { align: 'center' });
 
-  // ── Receipt details ──────────────────────────────────────────
   doc.setTextColor(50, 50, 50);
-  doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
 
   const now = new Date();
-  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
-  doc.setFont('helvetica', 'bold');
-  doc.text('Receipt #', 12, 46);
-  doc.text('Date', 12, 52);
-  doc.text('Time', 12, 58);
-  doc.text('Payment', W / 2 + 4, 46);
-  doc.text('Cashier', W / 2 + 4, 52);
+  doc.text(`Receipt #: ${sale.sale_number || 'N/A'}`, 12, 46);
+  doc.text(`Date: ${fmtDate(sale.sale_date)}`, 12, 52);
+  doc.text(`Time: ${timeStr}`, 12, 58);
 
-  doc.setFont('helvetica', 'normal');
-  doc.text(sale.sale_number || 'N/A', 38, 46);
-  doc.text(fmtDate(sale.sale_date), 38, 52);
-  doc.text(timeStr, 38, 58);
-  doc.text((sale.payment_method || 'cash').toUpperCase(), W - 12, 46, { align: 'right' });
-  doc.text(sale.created_by_name || '—', W - 12, 52, { align: 'right' });
-
-  // ── Thin divider ─────────────────────────────────────────────
-  doc.setDrawColor(220, 225, 230);
-  doc.setLineWidth(0.3);
-  doc.line(12, 63, W - 12, 63);
-
-  // ── Items table ──────────────────────────────────────────────
   autoTable(doc, {
     startY: 67,
     head: [['Description', 'Qty', 'Unit Price', 'Amount']],
@@ -74,134 +54,75 @@ export function downloadReceiptPDF(sale, items) {
       it.description || it.item_name || '—',
       String(parseFloat(it.quantity || 0)),
       money(it.unit_price),
-      money(it.total != null ? it.total : parseFloat(it.quantity || 0) * parseFloat(it.unit_price || 0)),
+      money(it.total || (it.quantity * it.unit_price)),
     ]),
-    styles: {
-      fontSize: 8,
-      cellPadding: { top: 3.5, bottom: 3.5, left: 4, right: 4 },
-      textColor: [40, 40, 40],
-      lineColor: [230, 233, 236],
-      lineWidth: 0.2,
-    },
-    headStyles: {
-      fillColor: [13, 27, 42],
-      textColor: [255, 255, 255],
-      fontStyle: 'bold',
-      fontSize: 7.5,
-      halign: 'left',
-    },
-    alternateRowStyles: { fillColor: [248, 250, 252] },
-    columnStyles: {
-      0: { cellWidth: 'auto' },
-      1: { halign: 'center', cellWidth: 14 },
-      2: { halign: 'right', cellWidth: 32 },
-      3: { halign: 'right', cellWidth: 32, fontStyle: 'bold' },
-    },
-    margin: { left: 12, right: 12 },
   });
 
   const finalY = (doc.lastAutoTable?.finalY ?? 130) + 6;
 
-  // ── Total bar ────────────────────────────────────────────────
   doc.setFillColor(13, 27, 42);
   doc.roundedRect(12, finalY, W - 24, 13, 2, 2, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9.5);
-  doc.text('TOTAL AMOUNT', 18, finalY + 8.5);
-  doc.text(money(sale.total_amount), W - 18, finalY + 8.5, { align: 'right' });
-
-  // ── Notes ────────────────────────────────────────────────────
-  if (sale.notes) {
-    doc.setTextColor(80, 80, 80);
-    doc.setFont('helvetica', 'italic');
-    doc.setFontSize(7.5);
-    doc.text(`Note: ${sale.notes}`, 12, finalY + 20);
-  }
-
-  // ── Footer ───────────────────────────────────────────────────
-  const footerY = finalY + (sale.notes ? 30 : 22);
-  doc.setDrawColor(220, 225, 230);
-  doc.setLineWidth(0.3);
-  doc.line(12, footerY - 4, W - 12, footerY - 4);
-
-  doc.setTextColor(130, 140, 150);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.text('Thank you for shopping at Silas Paint Store!', W / 2, footerY, { align: 'center' });
-  doc.text('For inquiries, contact us on WhatsApp', W / 2, footerY + 5, { align: 'center' });
+  doc.text(`TOTAL: ${money(sale.total_amount)}`, W - 18, finalY + 8.5, { align: 'right' });
 
   doc.save(`Receipt-${sale.sale_number || 'sale'}.pdf`);
 }
 
-/* ── WhatsApp message builder ────────────────────────────────── */
+/* ── WhatsApp MESSAGE ────────────────────────────────────────── */
 export function buildWhatsAppMessage(sale, items) {
   const lines = (items || []).map(it => {
-    const name  = it.description || it.item_name || 'Item';
-    const qty   = parseFloat(it.quantity || 0);
-    const total = parseFloat(it.total != null ? it.total : qty * parseFloat(it.unit_price || 0));
-    return `  • ${name} x${qty} = ${money(total)}`;
+    const name = it.description || it.item_name || 'Item';
+    const qty = Number(it.quantity || 0);
+    const total = it.total || qty * it.unit_price;
+
+    return `• ${name} x${qty} = ${money(total)}`;
   });
 
   return [
-    `Hello! 👋 Here is your receipt from *Silas Paint Store*`,
+    `Hello 👋 Here is your receipt from *Silas Paint Store*`,
     '',
-    `🧾 *Receipt #${sale.sale_number || 'N/A'}*`,
+    `🧾 Receipt #${sale.sale_number || 'N/A'}`,
     `📅 Date: ${fmtDate(sale.sale_date)}`,
-    `💳 Payment: ${(sale.payment_method || 'cash').toUpperCase()} ✅ Paid`,
+    `💳 Payment: ${(sale.payment_method || 'cash').toUpperCase()} ✅`,
     '',
-    '*Items Purchased:*',
+    '*Items:*',
     ...lines,
     '',
-    `💰 *TOTAL: ${money(sale.total_amount)}*`,
+    `💰 TOTAL: ${money(sale.total_amount)}`,
     '',
-    '_Thank you for your business! 🎨_',
-    '_Silas Paint Store — Dar es Salaam_',
+    'Thank you for your business 🎨',
   ].join('\n');
 }
 
-/**
- * Normalise any phone number to E.164 digits-only (no +).
- *
- * Accepted formats (Tanzania examples):
- *   0712345678      → 255712345678
- *   +255712345678   → 255712345678
- *   255712345678    → 255712345678
- *   712345678       → 255712345678   (9 bare digits)
- *
- * Works for any country — only the leading-0 rule is TZ-specific.
- */
+/* ── PHONE NORMALIZER ───────────────────────────────────────── */
 export function normalisePhone(rawPhone) {
-  // 1. Strip everything that is not a digit (spaces, dashes, dots, +, parens)
   const digits = String(rawPhone).replace(/\D/g, '');
 
-  // 2. Leading 0  → replace with country code 255  (07xx… → 255 7xx…)
   if (digits.startsWith('0')) return '255' + digits.slice(1);
-
-  // 3. Already has 255 prefix  → keep as-is
   if (digits.startsWith('255')) return digits;
-
-  // 4. 9 bare digits (no country code, no leading 0)  → prepend 255
   if (digits.length === 9) return '255' + digits;
 
-  // 5. Any other format (international number already normalised, etc.) → use as-is
   return digits;
 }
 
-/**
- * Build a wa.me URL for the given normalised number and plain-text message.
- * The same URL works for WhatsApp Messenger and WhatsApp Business — no separate logic needed.
- */
+/* ── WHATSAPP URL (FIXED CORE) ──────────────────────────────── */
 export function buildWhatsAppUrl(phone, message) {
   const number = normalisePhone(phone);
-  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+  const text = encodeURIComponent(message);
+
+  // IMPORTANT: ONLY wa.me (works for Messenger + Business)
+  return `https://wa.me/${number}?text=${text}`;
 }
 
-/**
- * Open WhatsApp (Messenger or Business) with a pre-filled message.
- * On mobile the OS picks the installed app; on desktop it opens WhatsApp Web.
- */
-export function openWhatsApp(rawPhone, message) {
-  const url = buildWhatsAppUrl(rawPhone, message);
-  window.open(url, '_blank', 'noopener,noreferrer');
+/* ── OPEN WHATSAPP ──────────────────────────────────────────── */
+export function openWhatsApp(phone, message) {
+  const url = buildWhatsAppUrl(phone, message);
+
+  // safer open (prevents popup blocking issues)
+  const win = window.open(url, '_blank', 'noopener,noreferrer');
+
+  if (!win) {
+    // fallback if popup blocked
+    window.location.href = url;
+  }
 }
