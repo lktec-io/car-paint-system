@@ -9,6 +9,7 @@ import api from '../../api/axios';
 import useUiStore from '../../stores/uiStore';
 import useAuthStore from '../../stores/authStore';
 import StatCard from '../../components/common/StatCard';
+import LowStockAlert from '../../components/common/LowStockAlert';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
 import '../../styles/Dashboard.css';
@@ -118,6 +119,11 @@ export default function Dashboard() {
           {refreshing ? 'Refreshing...' : 'Refresh Data'}
         </button>
       </div>
+
+      {/* Low stock banner — auto-updates when summary refreshes */}
+      {!loading && (s.lowStock?.length || 0) > 0 && (
+        <LowStockAlert items={s.lowStock} />
+      )}
 
       {/* Stat cards */}
       <div className="dashboard-grid stagger-children">

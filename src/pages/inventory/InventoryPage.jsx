@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { MdAdd, MdEdit, MdDelete } from 'react-icons/md';
 import api from '../../api/axios';
 import useUiStore from '../../stores/uiStore';
@@ -8,6 +8,7 @@ import Modal from '../../components/common/Modal';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import FormField from '../../components/common/FormField';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import LowStockAlert from '../../components/common/LowStockAlert';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDateTime } from '../../utils/formatDate';
 import '../../styles/InventoryPage.css';
@@ -159,6 +160,12 @@ export default function InventoryPage() {
 
   const isFormValid = Object.keys(validate(form)).length === 0;
 
+  // Derived low-stock list — updates automatically whenever items changes
+  const lowStockItems = useMemo(
+    () => items.filter(i => parseFloat(i.quantity) <= parseFloat(i.reorder_level)),
+    [items]
+  );
+
   const ITEM_COLS = [
     { key: 'sku',      label: 'SKU',      render: (v) => <code style={{ fontSize: '0.8rem', color: 'var(--color-accent-blue)' }}>{v}</code> },
     { key: 'item_name', label: 'Name' },
@@ -190,6 +197,11 @@ export default function InventoryPage() {
 
   return (
     <div className="inventory-page page-enter">
+      <LowStockAlert
+        items={lowStockItems}
+        onView={() => setTab(TABS.low)}
+      />
+
       <div className="page-header">
         <h2>Inventory Management</h2>
         {canManage && <button className="btn btn-primary" onClick={openCreate}><MdAdd /> Add Item</button>}
