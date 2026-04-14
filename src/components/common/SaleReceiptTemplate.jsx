@@ -85,9 +85,6 @@ const SaleReceiptTemplate = forwardRef(function SaleReceiptTemplate({ sale = {},
             </span>
           </div>
           <p style={{ color: '#9ca3af', fontSize: 12, margin: 0 }}>Mbeya, Tanzania</p>
-          <p style={{ color: '#9ca3af', fontSize: 12, margin: '2px 0 0' }}>
-            WhatsApp: +255 XXX XXX XXX
-          </p>
         </div>
 
         {/* Paid badge */}
