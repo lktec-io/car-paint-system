@@ -11,7 +11,7 @@ import ConfirmDialog from '../../components/common/ConfirmDialog';
 import FormField from '../../components/common/FormField';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
-import { downloadReceiptPDF, buildWhatsAppMessage, openWhatsApp } from '../../utils/generateReceipt';
+import { downloadReceiptPDF, openWhatsApp } from '../../utils/generateReceipt';
 
 const PAYMENT_METHODS = [
   { value: 'cash',   label: 'Cash' },
@@ -138,14 +138,44 @@ export default function SalesPage() {
     }
   }
 
-  // ── WhatsApp send ────────────────────────────────────────────
-  function handleWhatsApp() {
+  // ── WhatsApp send (image flow) ───────────────────────────────
+  // 1. Capture receipt as PNG → auto-download
+  // 2. Open WhatsApp with minimal message so user attaches the image
+  const [whatsappLoading, setWhatsappLoading] = useState(false);
+
+  async function handleWhatsApp() {
     if (!whatsappPhone.trim()) {
       addToast({ type: 'error', message: 'Enter a phone number first' });
       return;
     }
-    const msg = buildWhatsAppMessage(viewSale, viewItems);
-    openWhatsApp(whatsappPhone.trim(), msg);
+    if (!receiptRef.current) {
+      addToast({ type: 'error', message: 'Receipt not ready yet' });
+      return;
+    }
+
+    setWhatsappLoading(true);
+    try {
+      // Step 1 — capture receipt as high-quality PNG and auto-download
+      const canvas = await html2canvas(receiptRef.current, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+        logging: false,
+      });
+      const link = document.createElement('a');
+      link.download = `Receipt-${viewSale?.sale_number || 'sale'}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+      // Step 2 — open WhatsApp with minimal message (user attaches the image)
+      const msg = 'Here is your receipt from Silas Paint Store. Please see attached image.';
+      openWhatsApp(whatsappPhone.trim(), msg);
+    } catch (err) {
+      addToast({ type: 'error', message: 'Failed to generate receipt image' });
+      console.error(err);
+    } finally {
+      setWhatsappLoading(false);
+    }
   }
 
   // ── Create form ──────────────────────────────────────────────
@@ -483,15 +513,15 @@ export default function SalesPage() {
                 <button
                   className="btn"
                   onClick={handleWhatsApp}
-                  disabled={!whatsappPhone.trim() || viewLoading}
+                  disabled={!whatsappPhone.trim() || viewLoading || whatsappLoading}
                   style={{ background: '#25D366', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.4rem', whiteSpace: 'nowrap', flexShrink: 0 }}
                 >
                   <MdWhatsapp style={{ fontSize: '1.1rem' }} />
-                  Send via WhatsApp
+                  {whatsappLoading ? 'Preparing…' : 'Send via WhatsApp'}
                 </button>
               </div>
               <p style={{ fontSize: '0.72rem', color: 'var(--color-text-secondary)', marginTop: '0.4rem' }}>
-                Opens WhatsApp with a pre-filled receipt message. Works on mobile and desktop.
+                Downloads receipt image, then opens WhatsApp. Attach the image and send.
               </p>
             </div>
           </div>
