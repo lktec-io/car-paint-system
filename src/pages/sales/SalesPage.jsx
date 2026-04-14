@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import html2canvas from 'html2canvas';
+import SaleReceiptTemplate from '../../components/common/SaleReceiptTemplate';
 import { MdAdd, MdVisibility, MdDelete, MdDownload, MdWhatsapp } from 'react-icons/md';
 import api from '../../api/axios';
 import useUiStore from '../../stores/uiStore';
@@ -59,6 +61,8 @@ export default function SalesPage() {
   // Receipt state
   const [whatsappPhone, setWhatsappPhone] = useState('');
   const [pdfLoading, setPdfLoading]       = useState(false);
+  const [pngLoading, setPngLoading]       = useState(false);
+  const receiptRef = useRef(null);
 
   const load = useCallback(async () => {
     try {
@@ -108,6 +112,29 @@ export default function SalesPage() {
       console.error(err);
     } finally {
       setPdfLoading(false);
+    }
+  }
+
+  // ── Receipt PNG ──────────────────────────────────────────────
+  async function handleDownloadPNG() {
+    if (!receiptRef.current || !viewSale) return;
+    setPngLoading(true);
+    try {
+      const canvas = await html2canvas(receiptRef.current, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+        logging: false,
+      });
+      const link = document.createElement('a');
+      link.download = `Receipt-${viewSale.sale_number || 'sale'}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (err) {
+      addToast({ type: 'error', message: 'PNG export failed' });
+      console.error(err);
+    } finally {
+      setPngLoading(false);
     }
   }
 
@@ -353,19 +380,32 @@ export default function SalesPage() {
               Close
             </button>
             <button
+              className="btn btn-secondary"
+              onClick={handleDownloadPNG}
+              disabled={pngLoading || viewLoading || !viewItems.length}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+            >
+              <MdDownload />
+              {pngLoading ? 'Generating…' : 'Receipt (PNG)'}
+            </button>
+            <button
               className="btn btn-primary"
               onClick={handleDownloadPDF}
               disabled={pdfLoading || viewLoading || !viewItems.length}
               style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
             >
               <MdDownload />
-              {pdfLoading ? 'Generating…' : 'Download Receipt (PDF)'}
+              {pdfLoading ? 'Generating…' : 'Receipt (PDF)'}
             </button>
           </div>
         }
       >
         {viewSale && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.875rem' }}>
+          {/* Hidden receipt template — captured by html2canvas for PNG export */}
+          <div style={{ position: 'absolute', left: '-9999px', top: 0, pointerEvents: 'none', zIndex: -1 }}>
+            <SaleReceiptTemplate ref={receiptRef} sale={viewSale} items={viewItems} />
+          </div>
             {/* Sale meta */}
             <div className="form-row">
               <div>
